@@ -1,7 +1,19 @@
-import type { MockSignal, RiskLevel } from "@/lib/mockSignals";
+import type { RiskLevel } from "@/lib/mockSignals";
+
+export type SignalTableRow = {
+  id?: string;
+  pair: string;
+  signal: string;
+  score: number | null;
+  risk: RiskLevel | string | null;
+  timeframe: string | null;
+  date: string;
+  price?: number | null;
+  reason?: string | null;
+};
 
 type SignalTableProps = {
-  signals: MockSignal[];
+  signals: SignalTableRow[];
 };
 
 const riskClasses: Record<RiskLevel, string> = {
@@ -9,6 +21,14 @@ const riskClasses: Record<RiskLevel, string> = {
   Medio: "border-sky-400/30 bg-sky-400/10 text-sky-300",
   Alto: "border-violet-400/30 bg-violet-400/10 text-violet-300",
 };
+
+function getRiskClass(risk: SignalTableRow["risk"]) {
+  if (risk === "Bajo" || risk === "Medio" || risk === "Alto") {
+    return riskClasses[risk];
+  }
+
+  return "border-white/10 bg-white/[0.03] text-zinc-300";
+}
 
 export default function SignalTable({ signals }: SignalTableProps) {
   return (
@@ -27,24 +47,36 @@ export default function SignalTable({ signals }: SignalTableProps) {
           </thead>
           <tbody className="divide-y divide-white/10">
             {signals.map((signal) => (
-              <tr key={`${signal.pair}-${signal.timeframe}`} className="text-zinc-300">
+              <tr
+                key={signal.id ?? `${signal.pair}-${signal.timeframe}-${signal.date}`}
+                className="text-zinc-300"
+              >
                 <td className="px-5 py-4 font-semibold text-white">
                   {signal.pair}
                 </td>
-                <td className="px-5 py-4">{signal.signal}</td>
+                <td className="px-5 py-4">
+                  <div>{signal.signal}</div>
+                  {signal.reason ? (
+                    <div className="mt-1 max-w-sm truncate text-xs text-zinc-500">
+                      {signal.reason}
+                    </div>
+                  ) : null}
+                </td>
                 <td className="px-5 py-4">
                   <span className="rounded-full bg-emerald-400/10 px-3 py-1 text-emerald-300">
-                    {signal.score}
+                    {signal.score ?? "-"}
                   </span>
                 </td>
                 <td className="px-5 py-4">
                   <span
-                    className={`rounded-full border px-3 py-1 text-xs font-semibold ${riskClasses[signal.risk]}`}
+                    className={`rounded-full border px-3 py-1 text-xs font-semibold ${getRiskClass(signal.risk)}`}
                   >
-                    {signal.risk}
+                    {signal.risk ?? "Sin dato"}
                   </span>
                 </td>
-                <td className="px-5 py-4 text-zinc-400">{signal.timeframe}</td>
+                <td className="px-5 py-4 text-zinc-400">
+                  {signal.timeframe ?? "-"}
+                </td>
                 <td className="px-5 py-4 text-zinc-500">{signal.date}</td>
               </tr>
             ))}
