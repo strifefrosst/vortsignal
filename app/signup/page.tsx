@@ -18,6 +18,21 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
 
     const email = String(formData.get("email") ?? "");
     const password = String(formData.get("password") ?? "");
+
+    if (!email.trim()) {
+      redirect("/signup?error=El%20email%20es%20obligatorio");
+    }
+
+    if (!password) {
+      redirect("/signup?error=El%20password%20es%20obligatorio");
+    }
+
+    if (password.length < 8) {
+      redirect(
+        "/signup?error=El%20password%20debe%20tener%20al%20menos%208%20caracteres",
+      );
+    }
+
     const headerStore = await headers();
     const origin = headerStore.get("origin") ?? "http://localhost:3000";
     const supabase = await createClient();
@@ -31,11 +46,11 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
     });
 
     if (error) {
-      redirect("/signup?error=No%20se%20pudo%20crear%20la%20cuenta");
+      redirect(`/signup?error=${encodeURIComponent(error.message)}`);
     }
 
     redirect(
-      "/login?message=Revisa%20tu%20email%20para%20confirmar%20la%20cuenta",
+      "/login?message=Cuenta%20creada%20correctamente.%20Ya%20puedes%20iniciar%20sesi%C3%B3n.",
     );
   }
 
@@ -77,9 +92,13 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
               name="email"
               type="email"
               required
+              aria-describedby="signup-email-help"
               placeholder="trader@vortsignal.io"
-              className="mt-2 w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-white outline-none ring-emerald-400/30 placeholder:text-zinc-600 focus:ring-4"
+              className="mt-2 w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-white outline-none ring-emerald-400/30 placeholder:text-zinc-600 invalid:border-red-400/50 invalid:text-red-100 focus:ring-4"
             />
+            <span id="signup-email-help" className="mt-2 block text-xs text-zinc-500">
+              Obligatorio. Usa un email valido para confirmar tu acceso.
+            </span>
           </label>
 
           <label className="mt-4 block text-sm font-medium text-zinc-300">
@@ -88,10 +107,17 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
               name="password"
               type="password"
               required
-              minLength={6}
+              minLength={8}
+              aria-describedby="signup-password-help"
               placeholder="********"
-              className="mt-2 w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-white outline-none ring-emerald-400/30 placeholder:text-zinc-600 focus:ring-4"
+              className="mt-2 w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-white outline-none ring-emerald-400/30 placeholder:text-zinc-600 invalid:border-red-400/50 invalid:text-red-100 focus:ring-4"
             />
+            <span
+              id="signup-password-help"
+              className="mt-2 block text-xs text-zinc-500"
+            >
+              Obligatorio. Minimo 8 caracteres.
+            </span>
           </label>
 
           <button
