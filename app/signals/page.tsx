@@ -43,7 +43,7 @@ function mapSignal(signal: SignalRecord): SignalTableRow {
   return {
     id: signal.id,
     pair: formatPair(signal),
-    signal: signal.signal_type ?? "Sin senal",
+    signal: signal.signal_type ?? "Sin señal",
     score: signal.score,
     risk: signal.risk,
     timeframe: signal.timeframe,
@@ -67,7 +67,7 @@ export default async function SignalsPage() {
   return (
     <AppShell
       eyebrow="Signals"
-      title="Senales reales desde Supabase para explorar oportunidades sin ruido."
+      title="Señales reales desde Supabase para explorar oportunidades sin ruido."
       description="Lectura server-side de public.signals, ordenada por fecha de creacion descendente."
     >
       <div className="mb-5 flex flex-wrap gap-3">
@@ -87,7 +87,7 @@ export default async function SignalsPage() {
             Error de lectura
           </p>
           <h2 className="mt-3 text-2xl font-bold">
-            No se pudieron cargar las senales.
+            No se pudieron cargar las señales.
           </h2>
           <p className="mt-2 text-sm leading-6 text-red-100/80">
             Revisa permisos RLS o la disponibilidad de Supabase. La app sigue
@@ -99,7 +99,7 @@ export default async function SignalsPage() {
       ) : (
         <div className="rounded-2xl border border-white/10 bg-zinc-950/80 p-10 text-center shadow-2xl shadow-black/30">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-300">
-            Sin senales
+            Sin señales
           </p>
           <h2 className="mt-4 text-3xl font-bold tracking-tight">
             Todavia no hay oportunidades registradas.

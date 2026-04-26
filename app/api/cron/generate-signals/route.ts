@@ -1,5 +1,7 @@
 import { generateSignals } from "@/lib/signals/generate";
 
+export const dynamic = "force-dynamic";
+
 function isAuthorized(request: Request, secret: string) {
   const authorization = request.headers.get("authorization");
   const [scheme, token] = authorization?.split(" ") ?? [];
@@ -7,13 +9,13 @@ function isAuthorized(request: Request, secret: string) {
   return scheme === "Bearer" && token === secret;
 }
 
-export async function POST(request: Request) {
-  const generateSecret = process.env.SIGNALS_GENERATE_SECRET;
+export async function GET(request: Request) {
+  const cronSecret = process.env.CRON_SECRET;
 
-  if (!generateSecret) {
+  if (!cronSecret) {
     return Response.json(
       {
-        error: "Falta configuracion segura para generar señales.",
+        error: "Falta configuración segura para ejecutar el cron.",
       },
       {
         status: 500,
@@ -21,24 +23,13 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!isAuthorized(request, generateSecret)) {
+  if (!isAuthorized(request, cronSecret)) {
     return Response.json(
       {
         error: "Unauthorized",
       },
       {
         status: 401,
-      },
-    );
-  }
-
-  if (!process.env.SUPABASE_SECRET_KEY) {
-    return Response.json(
-      {
-        error: "Falta configuracion segura de Supabase para generar señales.",
-      },
-      {
-        status: 500,
       },
     );
   }

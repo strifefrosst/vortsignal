@@ -7,7 +7,7 @@ export async function POST() {
   if (!user) {
     return Response.json(
       {
-        error: "Debes iniciar sesion para generar senales.",
+        error: "Debes iniciar sesion para generar señales.",
       },
       {
         status: 401,
@@ -18,7 +18,7 @@ export async function POST() {
   if (!isAdmin) {
     return Response.json(
       {
-        error: "No tienes permisos para generar senales.",
+        error: "No tienes permisos para generar señales.",
       },
       {
         status: 403,
@@ -29,7 +29,7 @@ export async function POST() {
   if (!process.env.SUPABASE_SECRET_KEY) {
     return Response.json(
       {
-        error: "Falta configuracion segura de Supabase para generar senales.",
+        error: "Falta configuracion segura de Supabase para generar señales.",
       },
       {
         status: 500,
@@ -44,7 +44,7 @@ export async function POST() {
   } catch {
     return Response.json(
       {
-        error: "No se pudieron generar las senales de mercado.",
+        error: "No se pudieron generar las señales de mercado.",
       },
       {
         status: 502,

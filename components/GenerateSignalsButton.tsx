@@ -31,7 +31,7 @@ function getErrorMessage(payload: unknown) {
     return payload.error;
   }
 
-  return "No se pudieron generar las senales.";
+  return "No se pudieron generar las señales.";
 }
 
 function getInsertedCount(payload: unknown) {
@@ -56,7 +56,7 @@ export default function GenerateSignalsButton() {
   async function handleGenerate() {
     setState({
       status: "loading",
-      message: "Generando senales desde el servidor...",
+      message: "Generando señales desde el servidor...",
     });
 
     try {
@@ -79,13 +79,13 @@ export default function GenerateSignalsButton() {
         inserted,
         message:
           inserted === 1
-            ? "Se genero 1 senal nueva."
-            : `Se generaron ${inserted} senales nuevas.`,
+            ? "Se generó 1 señal nueva."
+            : `Se generaron ${inserted} señales nuevas.`,
       });
     } catch {
       setState({
         status: "error",
-        message: "No se pudo conectar con el generador de senales.",
+        message: "No se pudo conectar con el generador de señales.",
       });
     }
   }
@@ -100,7 +100,7 @@ export default function GenerateSignalsButton() {
             Generador privado
           </p>
           <h2 className="mt-3 text-2xl font-bold tracking-tight">
-            Crear senales ahora
+            Crear señales ahora
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
             La llamada se ejecuta contra una ruta admin protegida. Las claves se
@@ -114,7 +114,7 @@ export default function GenerateSignalsButton() {
           onClick={handleGenerate}
           className="inline-flex min-h-12 items-center justify-center rounded-xl bg-emerald-400 px-5 py-3 text-sm font-bold text-black transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400"
         >
-          {isLoading ? "Generando..." : "Generar senales"}
+          {isLoading ? "Generando..." : "Generar señales"}
         </button>
       </div>
 

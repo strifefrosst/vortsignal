@@ -67,7 +67,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
           </h1>
           <p className="mt-6 max-w-xl text-base leading-7 text-zinc-400">
             Registro real con Supabase Auth. Todavia no hay pagos, Binance ni
-            tablas de senales reales conectadas.
+            tablas de señales reales conectadas.
           </p>
         </div>
 

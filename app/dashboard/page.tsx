@@ -48,7 +48,7 @@ function mapSignal(signal: SignalRecord): SignalTableRow {
   return {
     id: signal.id,
     pair: formatPair(signal),
-    signal: signal.signal_type ?? "Sin senal",
+    signal: signal.signal_type ?? "Sin señal",
     score: signal.score,
     risk: signal.risk,
     timeframe: signal.timeframe,
@@ -104,7 +104,7 @@ export default async function DashboardPage() {
   const isAdmin = isAdminEmail(user.email);
   const metrics = [
     {
-      label: "Senales recientes",
+      label: "Señales recientes",
       value: String(totalSignals),
       detail: "Ultimos registros leidos desde Supabase",
       accent: "emerald" as const,
@@ -112,7 +112,7 @@ export default async function DashboardPage() {
     {
       label: "Score medio",
       value: averageScore > 0 ? String(averageScore) : "-",
-      detail: "Media de senales recientes con score",
+      detail: "Media de señales recientes con score",
       accent: "blue" as const,
     },
     {
@@ -133,7 +133,7 @@ export default async function DashboardPage() {
     <AppShell
       eyebrow="Dashboard"
       title="Centro de mando para vigilar el mercado crypto."
-      description="Resumen real de senales generadas, score y direccion operativa desde Supabase."
+      description="Resumen real de señales generadas, score y direccion operativa desde Supabase."
     >
       <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.06] p-4 md:flex-row md:items-center md:justify-between">
         <div>
@@ -148,7 +148,7 @@ export default async function DashboardPage() {
               href="/admin/signals"
               className="rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-400 hover:text-black"
             >
-              Generar senales
+              Generar señales
             </Link>
           ) : null}
           <LogoutButton />
@@ -166,7 +166,7 @@ export default async function DashboardPage() {
           <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-emerald-300">
-                Ultimas senales
+                Últimas señales
               </p>
               <h2 className="mt-2 text-2xl font-bold tracking-tight">
                 Las 5 lecturas mas recientes
@@ -186,7 +186,7 @@ export default async function DashboardPage() {
                 Error de lectura
               </p>
               <h3 className="mt-3 text-2xl font-bold">
-                No se pudieron cargar las senales.
+                No se pudieron cargar las señales.
               </h3>
               <p className="mt-2 text-sm leading-6 text-red-100/80">
                 Revisa permisos RLS o la disponibilidad de Supabase. No se
@@ -198,13 +198,13 @@ export default async function DashboardPage() {
           ) : (
             <div className="rounded-2xl border border-white/10 bg-zinc-950/80 p-8 text-center shadow-2xl shadow-black/30">
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-300">
-                Sin senales
+                Sin señales
               </p>
               <h3 className="mt-4 text-2xl font-bold tracking-tight">
                 Aun no hay registros recientes.
               </h3>
               <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-zinc-400">
-                Cuando el motor genere senales, apareceran aqui desde la mas
+                Cuando el motor genere señales, apareceran aqui desde la mas
                 reciente.
               </p>
             </div>
@@ -215,21 +215,21 @@ export default async function DashboardPage() {
           <p className="text-sm font-semibold uppercase tracking-[0.22em] text-emerald-300">
             Pulso operativo
           </p>
-          <h2 className="mt-4 text-2xl font-bold">Lectura de senales</h2>
+          <h2 className="mt-4 text-2xl font-bold">Lectura de señales</h2>
           <p className="mt-3 text-sm leading-6 text-zinc-400">
-            Este panel resume las senales persistidas en Supabase. La lectura
+            Este panel resume las señales persistidas en Supabase. La lectura
             prioriza actividad reciente, distribucion LONG/SHORT/WAIT y score
             medio sin ejecutar llamadas nuevas a Binance desde el dashboard.
           </p>
           <div className="mt-6 grid gap-3 text-sm text-zinc-300">
             <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-              LONG: {longSignals} senales recientes.
+              LONG: {longSignals} señales recientes.
             </div>
             <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-              SHORT: {shortSignals} senales recientes.
+              SHORT: {shortSignals} señales recientes.
             </div>
             <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-              WAIT: {waitSignals} senales recientes.
+              WAIT: {waitSignals} señales recientes.
             </div>
           </div>
         </aside>

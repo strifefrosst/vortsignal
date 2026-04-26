@@ -4,14 +4,14 @@ const plans = [
   {
     name: "Free",
     price: "0 EUR",
-    description: "Para validar el radar y revisar senales limitadas.",
-    features: ["3 senales semanales", "Score basico", "Watchlist limitada"],
+    description: "Para validar el radar y revisar señales limitadas.",
+    features: ["3 señales semanales", "Score basico", "Watchlist limitada"],
   },
   {
     name: "Pro",
     price: "29 EUR",
     description: "Para traders que quieren seguimiento diario y contexto.",
-    features: ["Senales diarias", "Score avanzado", "Alertas prioritarias"],
+    features: ["Señales diarias", "Score avanzado", "Alertas prioritarias"],
     featured: true,
   },
   {

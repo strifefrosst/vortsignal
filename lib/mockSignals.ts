@@ -54,7 +54,7 @@ export const mockSignals: MockSignal[] = [
 
 export const dashboardMetrics = [
   {
-    label: "Senales activas",
+    label: "Señales activas",
     value: "12",
     detail: "+3 desde ayer",
     accent: "emerald",

@@ -38,7 +38,7 @@ export default function SignalTable({ signals }: SignalTableProps) {
           <thead className="border-b border-white/10 bg-white/[0.03] text-xs uppercase tracking-[0.18em] text-zinc-500">
             <tr>
               <th className="px-5 py-4 font-semibold">Par</th>
-              <th className="px-5 py-4 font-semibold">Senal</th>
+              <th className="px-5 py-4 font-semibold">Señal</th>
               <th className="px-5 py-4 font-semibold">Score</th>
               <th className="px-5 py-4 font-semibold">Riesgo</th>
               <th className="px-5 py-4 font-semibold">Timeframe</th>

@@ -49,7 +49,7 @@ export default async function AdminSignalsPage() {
   return (
     <AppShell
       eyebrow="Admin Signals"
-      title="Generacion manual de senales con control privado."
+      title="Generacion manual de señales con control privado."
       description="Panel interno para disparar el motor de scoring desde la interfaz sin enviar secretos al navegador."
     >
       <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-white/10 bg-zinc-950/80 p-4 md:flex-row md:items-center md:justify-between">
