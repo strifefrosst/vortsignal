@@ -70,6 +70,35 @@ function isActiveSignal(signal: SignalRecord, now: Date) {
   return new Date(signal.expires_at) > now;
 }
 
+function getSignalKey(signal: SignalRecord) {
+  return signal.symbol ?? formatPair(signal);
+}
+
+function getSignalTime(signal: SignalRecord) {
+  if (!signal.created_at) {
+    return 0;
+  }
+
+  return new Date(signal.created_at).getTime();
+}
+
+function getCurrentSignalsBySymbol(signals: SignalRecord[]) {
+  const currentSignals = new Map<string, SignalRecord>();
+
+  signals.forEach((signal) => {
+    const key = getSignalKey(signal);
+    const current = currentSignals.get(key);
+
+    if (!current || getSignalTime(signal) > getSignalTime(current)) {
+      currentSignals.set(key, signal);
+    }
+  });
+
+  return Array.from(currentSignals.values()).sort(
+    (a, b) => (b.score ?? -1) - (a.score ?? -1),
+  );
+}
+
 function SignalSection({
   title,
   description,
@@ -123,9 +152,10 @@ export default async function SignalsPage() {
 
   const now = new Date();
   const records = (data ?? []) as SignalRecord[];
-  const activeSignals = records
-    .filter((signal) => isActiveSignal(signal, now))
-    .map((signal) => mapSignal(signal));
+  const activeRecords = records.filter((signal) => isActiveSignal(signal, now));
+  const activeSignals = getCurrentSignalsBySymbol(activeRecords).map((signal) =>
+    mapSignal(signal),
+  );
   const expiredSignals = records
     .filter((signal) => signal.expires_at && new Date(signal.expires_at) <= now)
     .map((signal) => mapSignal(signal));
@@ -165,7 +195,7 @@ export default async function SignalsPage() {
           {activeSignals.length > 0 ? (
             <SignalSection
               title="Señales activas"
-              description="Oportunidades vigentes: señales con vencimiento futuro y registros antiguos sin expires_at."
+              description="La señal actual representa la última lectura vigente del motor para cada activo, ordenada por score descendente."
               signals={activeSignals}
             />
           ) : (
