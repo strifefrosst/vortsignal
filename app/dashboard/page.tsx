@@ -85,6 +85,14 @@ function calculateAverageScore(signals: SignalRecord[]) {
   );
 }
 
+function isActiveSignal(signal: SignalRecord, now: Date) {
+  if (!signal.expires_at) {
+    return true;
+  }
+
+  return new Date(signal.expires_at) > now;
+}
+
 export default async function DashboardPage() {
   const supabase = await createClient();
   const {
@@ -104,24 +112,34 @@ export default async function DashboardPage() {
     .limit(25);
 
   const recentSignals = (data ?? []) as SignalRecord[];
-  const latestSignals = recentSignals.slice(0, 5).map(mapSignal);
-  const averageScore = calculateAverageScore(recentSignals);
-  const totalSignals = recentSignals.length;
-  const longSignals = countBySignalType(recentSignals, "LONG");
-  const shortSignals = countBySignalType(recentSignals, "SHORT");
-  const waitSignals = countBySignalType(recentSignals, "WAIT");
+  const activeSignals = recentSignals.filter((signal) =>
+    isActiveSignal(signal, new Date()),
+  );
+  const metricSignals =
+    activeSignals.length > 0 ? activeSignals : recentSignals;
+  const latestSignals = metricSignals.slice(0, 5).map(mapSignal);
+  const averageScore = calculateAverageScore(metricSignals);
+  const totalSignals = metricSignals.length;
+  const longSignals = countBySignalType(metricSignals, "LONG");
+  const shortSignals = countBySignalType(metricSignals, "SHORT");
+  const waitSignals = countBySignalType(metricSignals, "WAIT");
+  const metricScope =
+    activeSignals.length > 0 ? "señales activas" : "histórico reciente";
   const isAdmin = isAdminEmail(user.email);
   const metrics = [
     {
-      label: "Señales recientes",
+      label: activeSignals.length > 0 ? "Señales activas" : "Señales recientes",
       value: String(totalSignals),
-      detail: "Ultimos registros leidos desde Supabase",
+      detail:
+        activeSignals.length > 0
+          ? "Vigentes por expires_at o antiguas sin vencimiento"
+          : "Fallback visual con registros recientes",
       accent: "emerald" as const,
     },
     {
       label: "Score medio",
       value: averageScore > 0 ? String(averageScore) : "-",
-      detail: "Media de señales recientes con score",
+      detail: `Media de ${metricScope} con score`,
       accent: "blue" as const,
     },
     {
@@ -178,7 +196,9 @@ export default async function DashboardPage() {
                 Últimas señales
               </p>
               <h2 className="mt-2 text-2xl font-bold tracking-tight">
-                Las 5 lecturas mas recientes
+                {activeSignals.length > 0
+                  ? "Las 5 lecturas activas más recientes"
+                  : "Fallback con histórico reciente"}
               </h2>
             </div>
             <Link
@@ -226,19 +246,19 @@ export default async function DashboardPage() {
           </p>
           <h2 className="mt-4 text-2xl font-bold">Lectura de señales</h2>
           <p className="mt-3 text-sm leading-6 text-zinc-400">
-            Este panel resume las señales persistidas en Supabase. La lectura
-            prioriza actividad reciente, distribucion LONG/SHORT/WAIT y score
-            medio sin ejecutar llamadas nuevas a Binance desde el dashboard.
+            Este panel prioriza señales activas. Si no hay vigentes, usa el
+            histórico reciente como referencia visual sin ejecutar llamadas
+            nuevas a Binance desde el dashboard.
           </p>
           <div className="mt-6 grid gap-3 text-sm text-zinc-300">
             <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-              LONG: {longSignals} señales recientes.
+              LONG: {longSignals} {metricScope}.
             </div>
             <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-              SHORT: {shortSignals} señales recientes.
+              SHORT: {shortSignals} {metricScope}.
             </div>
             <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-              WAIT: {waitSignals} señales recientes.
+              WAIT: {waitSignals} {metricScope}.
             </div>
           </div>
         </aside>
