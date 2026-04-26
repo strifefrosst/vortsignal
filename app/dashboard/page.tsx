@@ -1,10 +1,80 @@
 import AppShell from "@/components/AppShell";
 import LogoutButton from "@/components/LogoutButton";
 import MetricCard from "@/components/MetricCard";
-import SignalTable from "@/components/SignalTable";
-import { dashboardMetrics, mockSignals } from "@/lib/mockSignals";
+import SignalTable, { type SignalTableRow } from "@/components/SignalTable";
+import { isAdminEmail } from "@/lib/auth/admin";
 import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
 import { redirect } from "next/navigation";
+
+type SignalRecord = {
+  id: string;
+  symbol: string | null;
+  base_asset: string | null;
+  quote_asset: string | null;
+  signal_type: string | null;
+  score: number | null;
+  risk: string | null;
+  timeframe: string | null;
+  price: number | null;
+  reason: string | null;
+  created_at: string | null;
+};
+
+function formatPair(signal: SignalRecord) {
+  if (signal.symbol) {
+    return signal.symbol;
+  }
+
+  if (signal.base_asset && signal.quote_asset) {
+    return `${signal.base_asset}/${signal.quote_asset}`;
+  }
+
+  return "Sin par";
+}
+
+function formatDate(value: string | null) {
+  if (!value) {
+    return "Sin fecha";
+  }
+
+  return new Intl.DateTimeFormat("es-ES", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
+function mapSignal(signal: SignalRecord): SignalTableRow {
+  return {
+    id: signal.id,
+    pair: formatPair(signal),
+    signal: signal.signal_type ?? "Sin senal",
+    score: signal.score,
+    risk: signal.risk,
+    timeframe: signal.timeframe,
+    date: formatDate(signal.created_at),
+    price: signal.price,
+    reason: signal.reason,
+  };
+}
+
+function countBySignalType(signals: SignalRecord[], signalType: string) {
+  return signals.filter((signal) => signal.signal_type === signalType).length;
+}
+
+function calculateAverageScore(signals: SignalRecord[]) {
+  const scores = signals
+    .map((signal) => signal.score)
+    .filter((score): score is number => typeof score === "number");
+
+  if (scores.length === 0) {
+    return 0;
+  }
+
+  return Math.round(
+    scores.reduce((total, score) => total + score, 0) / scores.length,
+  );
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -16,11 +86,54 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
+  const { data, error } = await supabase
+    .from("signals")
+    .select(
+      "id, symbol, base_asset, quote_asset, signal_type, score, risk, timeframe, price, reason, created_at",
+    )
+    .order("created_at", { ascending: false })
+    .limit(25);
+
+  const recentSignals = (data ?? []) as SignalRecord[];
+  const latestSignals = recentSignals.slice(0, 5).map(mapSignal);
+  const averageScore = calculateAverageScore(recentSignals);
+  const totalSignals = recentSignals.length;
+  const longSignals = countBySignalType(recentSignals, "LONG");
+  const shortSignals = countBySignalType(recentSignals, "SHORT");
+  const waitSignals = countBySignalType(recentSignals, "WAIT");
+  const isAdmin = isAdminEmail(user.email);
+  const metrics = [
+    {
+      label: "Senales recientes",
+      value: String(totalSignals),
+      detail: "Ultimos registros leidos desde Supabase",
+      accent: "emerald" as const,
+    },
+    {
+      label: "Score medio",
+      value: averageScore > 0 ? String(averageScore) : "-",
+      detail: "Media de senales recientes con score",
+      accent: "blue" as const,
+    },
+    {
+      label: "LONG",
+      value: String(longSignals),
+      detail: "Sesgo alcista detectado",
+      accent: "emerald" as const,
+    },
+    {
+      label: "SHORT / WAIT",
+      value: `${shortSignals} / ${waitSignals}`,
+      detail: "Lecturas defensivas o de espera",
+      accent: "violet" as const,
+    },
+  ];
+
   return (
     <AppShell
       eyebrow="Dashboard"
       title="Centro de mando para vigilar el mercado crypto."
-      description="Vista mock de actividad, score y riesgo para validar la experiencia antes de conectar datos reales."
+      description="Resumen real de senales generadas, score y direccion operativa desde Supabase."
     >
       <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.06] p-4 md:flex-row md:items-center md:justify-between">
         <div>
@@ -29,29 +142,95 @@ export default async function DashboardPage() {
           </p>
           <p className="mt-1 text-sm text-zinc-300">{user.email}</p>
         </div>
-        <LogoutButton />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          {isAdmin ? (
+            <Link
+              href="/admin/signals"
+              className="rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-400 hover:text-black"
+            >
+              Generar senales
+            </Link>
+          ) : null}
+          <LogoutButton />
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {dashboardMetrics.map((metric) => (
+        {metrics.map((metric) => (
           <MetricCard key={metric.label} {...metric} />
         ))}
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[1.5fr_0.9fr]">
-        <SignalTable signals={mockSignals.slice(0, 4)} />
+        <section>
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-emerald-300">
+                Ultimas senales
+              </p>
+              <h2 className="mt-2 text-2xl font-bold tracking-tight">
+                Las 5 lecturas mas recientes
+              </h2>
+            </div>
+            <Link
+              href="/signals"
+              className="text-sm font-semibold text-emerald-300 transition hover:text-emerald-200"
+            >
+              Ver todas
+            </Link>
+          </div>
+
+          {error ? (
+            <div className="rounded-2xl border border-red-400/20 bg-red-400/10 p-6 text-red-100 shadow-2xl shadow-black/30">
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-red-300">
+                Error de lectura
+              </p>
+              <h3 className="mt-3 text-2xl font-bold">
+                No se pudieron cargar las senales.
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-red-100/80">
+                Revisa permisos RLS o la disponibilidad de Supabase. No se
+                muestran detalles sensibles.
+              </p>
+            </div>
+          ) : latestSignals.length > 0 ? (
+            <SignalTable signals={latestSignals} />
+          ) : (
+            <div className="rounded-2xl border border-white/10 bg-zinc-950/80 p-8 text-center shadow-2xl shadow-black/30">
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-300">
+                Sin senales
+              </p>
+              <h3 className="mt-4 text-2xl font-bold tracking-tight">
+                Aun no hay registros recientes.
+              </h3>
+              <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-zinc-400">
+                Cuando el motor genere senales, apareceran aqui desde la mas
+                reciente.
+              </p>
+            </div>
+          )}
+        </section>
 
         <aside className="rounded-2xl border border-white/10 bg-zinc-950/80 p-6 shadow-2xl shadow-black/30">
           <p className="text-sm font-semibold uppercase tracking-[0.22em] text-emerald-300">
-            Pulso del mercado
+            Pulso operativo
           </p>
-          <h2 className="mt-4 text-2xl font-bold">Sesgo selectivo</h2>
+          <h2 className="mt-4 text-2xl font-bold">Lectura de senales</h2>
           <p className="mt-3 text-sm leading-6 text-zinc-400">
-            El entorno simulado mantiene fuerza en activos grandes y cautela en
-            alts con menor liquidez. Sin ejecucion automatica ni datos reales.
+            Este panel resume las senales persistidas en Supabase. La lectura
+            prioriza actividad reciente, distribucion LONG/SHORT/WAIT y score
+            medio sin ejecutar llamadas nuevas a Binance desde el dashboard.
           </p>
-          <div className="mt-6 rounded-xl border border-sky-400/20 bg-sky-400/10 p-4 text-sm text-sky-200">
-            Proxima fase: conectar fuentes de mercado y reglas de scoring.
+          <div className="mt-6 grid gap-3 text-sm text-zinc-300">
+            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+              LONG: {longSignals} senales recientes.
+            </div>
+            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+              SHORT: {shortSignals} senales recientes.
+            </div>
+            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+              WAIT: {waitSignals} senales recientes.
+            </div>
           </div>
         </aside>
       </div>
