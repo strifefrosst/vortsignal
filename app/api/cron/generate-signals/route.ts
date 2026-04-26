@@ -35,7 +35,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const result = await generateSignals();
+    const result = await generateSignals("cron");
 
     return Response.json(result);
   } catch {

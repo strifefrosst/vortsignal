@@ -4,6 +4,8 @@ import { getMarketSnapshots } from "@/lib/market/binance";
 import { scoreSignal } from "@/lib/signals/scoring";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+type SignalSource = "admin" | "cron" | "external";
+
 function splitSymbol(symbol: string) {
   const quoteAssets = ["USDC", "USDT", "BTC", "ETH"];
   const quoteAsset = quoteAssets.find((quote) => symbol.endsWith(quote));
@@ -21,7 +23,14 @@ function splitSymbol(symbol: string) {
   };
 }
 
-export async function generateSignals() {
+function getExpiresAt() {
+  const expiresAt = new Date();
+  expiresAt.setHours(expiresAt.getHours() + 4);
+
+  return expiresAt.toISOString();
+}
+
+export async function generateSignals(source: SignalSource = "external") {
   const [snapshots, supabase] = await Promise.all([
     getMarketSnapshots(),
     Promise.resolve(createAdminClient()),
@@ -40,6 +49,12 @@ export async function generateSignals() {
       timeframe: "1h",
       price: snapshot.price,
       reason: score.reason,
+      rsi: snapshot.rsi,
+      sma20: snapshot.sma20,
+      volume_ratio: snapshot.volumeRatio,
+      trend: snapshot.trend,
+      source,
+      expires_at: getExpiresAt(),
     };
   });
 
@@ -47,7 +62,7 @@ export async function generateSignals() {
     .from("signals")
     .insert(generatedSignals)
     .select(
-      "id, symbol, signal_type, score, risk, timeframe, price, reason, created_at",
+      "id, symbol, signal_type, score, risk, timeframe, price, reason, rsi, sma20, volume_ratio, trend, source, expires_at, created_at",
     );
 
   if (error) {

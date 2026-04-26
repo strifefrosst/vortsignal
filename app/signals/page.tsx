@@ -13,6 +13,12 @@ type SignalRecord = {
   timeframe: string | null;
   price: number | null;
   reason: string | null;
+  rsi: number | null;
+  sma20: number | null;
+  volume_ratio: number | null;
+  trend: string | null;
+  source: string | null;
+  expires_at: string | null;
   created_at: string | null;
 };
 
@@ -50,6 +56,9 @@ function mapSignal(signal: SignalRecord): SignalTableRow {
     date: formatDate(signal.created_at),
     price: signal.price,
     reason: signal.reason,
+    rsi: signal.rsi,
+    volumeRatio: signal.volume_ratio,
+    trend: signal.trend,
   };
 }
 
@@ -58,7 +67,7 @@ export default async function SignalsPage() {
   const { data, error } = await supabase
     .from("signals")
     .select(
-      "id, symbol, base_asset, quote_asset, signal_type, score, risk, timeframe, price, reason, created_at",
+      "id, symbol, base_asset, quote_asset, signal_type, score, risk, timeframe, price, reason, rsi, sma20, volume_ratio, trend, source, expires_at, created_at",
     )
     .order("created_at", { ascending: false });
 

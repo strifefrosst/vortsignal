@@ -44,7 +44,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await generateSignals();
+    const result = await generateSignals("external");
 
     return Response.json(result);
   } catch {

@@ -38,7 +38,7 @@ export async function POST() {
   }
 
   try {
-    const result = await generateSignals();
+    const result = await generateSignals("admin");
 
     return Response.json(result);
   } catch {
