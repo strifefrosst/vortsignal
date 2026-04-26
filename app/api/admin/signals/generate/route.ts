@@ -1,33 +1,27 @@
+import { getAdminSession } from "@/lib/auth/admin";
 import { generateSignals } from "@/lib/signals/generate";
 
-function isAuthorized(request: Request, secret: string) {
-  const authorization = request.headers.get("authorization");
-  const [scheme, token] = authorization?.split(" ") ?? [];
+export async function POST() {
+  const { user, isAdmin } = await getAdminSession();
 
-  return scheme === "Bearer" && token === secret;
-}
-
-export async function POST(request: Request) {
-  const generateSecret = process.env.SIGNALS_GENERATE_SECRET;
-
-  if (!generateSecret) {
+  if (!user) {
     return Response.json(
       {
-        error: "Falta configuracion segura para generar senales.",
+        error: "Debes iniciar sesion para generar senales.",
       },
       {
-        status: 500,
+        status: 401,
       },
     );
   }
 
-  if (!isAuthorized(request, generateSecret)) {
+  if (!isAdmin) {
     return Response.json(
       {
-        error: "Unauthorized",
+        error: "No tienes permisos para generar senales.",
       },
       {
-        status: 401,
+        status: 403,
       },
     );
   }
