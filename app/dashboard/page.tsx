@@ -1,8 +1,10 @@
 import AppShell from "@/components/AppShell";
 import LogoutButton from "@/components/LogoutButton";
 import MetricCard from "@/components/MetricCard";
+import RiskBadge from "@/components/RiskBadge";
+import ScoreBadge from "@/components/ScoreBadge";
 import SignalBadge from "@/components/SignalBadge";
-import SignalTable, { type SignalTableRow } from "@/components/SignalTable";
+import TrendBadge from "@/components/TrendBadge";
 import { isAdminEmail } from "@/lib/auth/admin";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
@@ -27,6 +29,14 @@ type SignalRecord = {
   expires_at: string | null;
   created_at: string | null;
 };
+
+const quickLinks = [
+  { href: "/signals?status=active", label: "Ver señales activas" },
+  { href: "/signals?status=active&minScore=70", label: "Score 70+" },
+  { href: "/signals?status=active&risk=HIGH", label: "Riesgo alto" },
+  { href: "/signals?status=active&type=LONG", label: "Solo LONG" },
+  { href: "/signals?status=active&type=WAIT", label: "Solo WAIT" },
+];
 
 function formatPair(signal: SignalRecord) {
   if (signal.symbol) {
@@ -57,25 +67,32 @@ function formatDate(value: string | null) {
     .replace(",", " ·");
 }
 
-function mapSignal(signal: SignalRecord): SignalTableRow {
-  return {
-    id: signal.id,
-    pair: formatPair(signal),
-    signal: signal.signal_type ?? "Sin señal",
-    score: signal.score,
-    risk: signal.risk,
-    timeframe: signal.timeframe,
-    date: formatDate(signal.created_at),
-    price: signal.price,
-    reason: signal.reason,
-    rsi: signal.rsi,
-    volumeRatio: signal.volume_ratio,
-    trend: signal.trend,
-  };
+function formatPrice(value: number | null) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return "-";
+  }
+
+  return new Intl.NumberFormat("es-ES", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: value > 1000 ? 0 : 4,
+  }).format(value);
+}
+
+function formatIndicator(value: number | null, digits = 1) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return "-";
+  }
+
+  return value.toFixed(digits);
 }
 
 function countBySignalType(signals: SignalRecord[], signalType: string) {
   return signals.filter((signal) => signal.signal_type === signalType).length;
+}
+
+function countByRisk(signals: SignalRecord[], risk: string) {
+  return signals.filter((signal) => signal.risk === risk).length;
 }
 
 function calculateAverageScore(signals: SignalRecord[]) {
@@ -100,6 +117,98 @@ function isActiveSignal(signal: SignalRecord, now: Date) {
   return new Date(signal.expires_at) > now;
 }
 
+function sortByScoreDesc(signals: SignalRecord[]) {
+  return [...signals].sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
+}
+
+function SignalSummaryCard({ signal }: { signal: SignalRecord }) {
+  return (
+    <article className="rounded-2xl border border-white/10 bg-zinc-950/80 p-5 shadow-2xl shadow-black/30">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">
+            {formatDate(signal.created_at)}
+          </p>
+          <h3 className="mt-2 text-2xl font-black tracking-tight text-white">
+            {formatPair(signal)}
+          </h3>
+        </div>
+        <ScoreBadge score={signal.score} />
+      </div>
+
+      <div className="mt-5 flex flex-wrap items-center gap-2">
+        <SignalBadge signal={signal.signal_type} />
+        <RiskBadge risk={signal.risk} />
+        <TrendBadge trend={signal.trend} />
+      </div>
+
+      <div className="mt-5 grid gap-3 text-sm text-zinc-300 sm:grid-cols-3">
+        <div className="rounded-xl border border-white/10 bg-black/40 p-3">
+          <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">
+            Precio
+          </p>
+          <p className="mt-1 font-semibold text-white">
+            {formatPrice(signal.price)}
+          </p>
+        </div>
+        <div className="rounded-xl border border-white/10 bg-black/40 p-3">
+          <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">
+            RSI
+          </p>
+          <p className="mt-1 font-semibold text-white">
+            {formatIndicator(signal.rsi)}
+          </p>
+        </div>
+        <div className="rounded-xl border border-white/10 bg-black/40 p-3">
+          <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">
+            Volumen
+          </p>
+          <p className="mt-1 font-semibold text-white">
+            {formatIndicator(signal.volume_ratio, 2)}x
+          </p>
+        </div>
+      </div>
+
+      {signal.reason ? (
+        <p className="mt-5 text-sm leading-6 text-zinc-400">{signal.reason}</p>
+      ) : null}
+    </article>
+  );
+}
+
+function EmptyActiveState({ isAdmin }: { isAdmin: boolean }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-zinc-950/80 p-8 text-center shadow-2xl shadow-black/30">
+      <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-300">
+        Sin señales activas
+      </p>
+      <h2 className="mt-4 text-3xl font-bold tracking-tight">
+        No hay lecturas vigentes ahora mismo.
+      </h2>
+      <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-zinc-400">
+        Puedes revisar el histórico completo o lanzar una nueva generación si
+        tienes permisos de administrador.
+      </p>
+      <div className="mt-6 flex flex-wrap justify-center gap-3">
+        <Link
+          href="/signals?status=all"
+          className="rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-400 hover:text-black"
+        >
+          Revisar señales
+        </Link>
+        {isAdmin ? (
+          <Link
+            href="/admin/signals"
+            className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-semibold text-zinc-200 transition hover:border-emerald-400/40 hover:text-emerald-200"
+          >
+            Generar señales
+          </Link>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 export default async function DashboardPage() {
   const supabase = await createClient();
   const {
@@ -116,50 +225,46 @@ export default async function DashboardPage() {
       "id, symbol, base_asset, quote_asset, signal_type, score, risk, timeframe, price, reason, rsi, sma20, volume_ratio, trend, source, expires_at, created_at",
     )
     .order("created_at", { ascending: false })
-    .limit(25);
+    .limit(100);
 
-  const recentSignals = (data ?? []) as SignalRecord[];
-  const activeSignals = recentSignals.filter((signal) =>
-    isActiveSignal(signal, new Date()),
-  );
-  const metricSignals =
-    activeSignals.length > 0 ? activeSignals : recentSignals;
-  const latestSignals = metricSignals.slice(0, 5).map(mapSignal);
-  const averageScore = calculateAverageScore(metricSignals);
-  const totalSignals = metricSignals.length;
-  const longSignals = countBySignalType(metricSignals, "LONG");
-  const shortSignals = countBySignalType(metricSignals, "SHORT");
-  const waitSignals = countBySignalType(metricSignals, "WAIT");
-  const metricScope =
-    activeSignals.length > 0 ? "señales activas" : "histórico reciente";
+  const now = new Date();
+  const records = (data ?? []) as SignalRecord[];
+  const activeSignals = records.filter((signal) => isActiveSignal(signal, now));
+  const sortedActiveSignals = sortByScoreDesc(activeSignals);
+  const featuredSignal = sortedActiveSignals[0];
+  const topWatchedSignals = sortedActiveSignals.slice(0, 5);
   const isAdmin = isAdminEmail(user.email);
+  const averageScore = calculateAverageScore(activeSignals);
+  const longSignals = countBySignalType(activeSignals, "LONG");
+  const shortSignals = countBySignalType(activeSignals, "SHORT");
+  const waitSignals = countBySignalType(activeSignals, "WAIT");
+  const highRiskSignals = countByRisk(activeSignals, "HIGH");
+  const mediumRiskSignals = countByRisk(activeSignals, "MEDIUM");
+  const lowRiskSignals = countByRisk(activeSignals, "LOW");
   const metrics = [
     {
-      label: activeSignals.length > 0 ? "Señales activas" : "Señales recientes",
-      value: String(totalSignals),
-      detail:
-        activeSignals.length > 0
-          ? "Vigentes por ventana operativa"
-          : "Referencia con registros recientes",
+      label: "Señales activas",
+      value: String(activeSignals.length),
+      detail: "Lecturas vigentes por ventana operativa",
       accent: "emerald" as const,
     },
     {
       label: "Score medio",
       value: averageScore > 0 ? String(averageScore) : "-",
-      detail: `Media de ${metricScope} con score`,
+      detail: "Media de señales activas con score",
       accent: "blue" as const,
     },
     {
-      label: "LONG",
-      value: String(longSignals),
-      detail: "Sesgo alcista detectado",
-      accent: "emerald" as const,
+      label: "LONG / SHORT / WAIT",
+      value: `${longSignals} / ${shortSignals} / ${waitSignals}`,
+      detail: "Distribución direccional activa",
+      accent: "violet" as const,
     },
     {
-      label: "SHORT / WAIT",
-      value: `${shortSignals} / ${waitSignals}`,
-      detail: "Lecturas defensivas o de espera",
-      accent: "violet" as const,
+      label: "Riesgo H / M / L",
+      value: `${highRiskSignals} / ${mediumRiskSignals} / ${lowRiskSignals}`,
+      detail: "Riesgo alto, medio y bajo",
+      accent: "blue" as const,
     },
   ];
 
@@ -167,7 +272,7 @@ export default async function DashboardPage() {
     <AppShell
       eyebrow="PANEL"
       title="Centro de mando para vigilar el mercado crypto."
-      description="Resumen de señales generadas, score medio y dirección operativa."
+      description="Resumen de señales activas, riesgo, score y accesos rápidos."
     >
       <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.06] p-4 md:flex-row md:items-center md:justify-between">
         <div>
@@ -189,96 +294,117 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {metrics.map((metric) => (
-          <MetricCard key={metric.label} {...metric} />
-        ))}
-      </div>
+      {error ? (
+        <div className="rounded-2xl border border-red-400/20 bg-red-400/10 p-6 text-red-100 shadow-2xl shadow-black/30">
+          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-red-300">
+            Error de lectura
+          </p>
+          <h2 className="mt-3 text-2xl font-bold">
+            No se pudieron cargar las señales.
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-red-100/80">
+            Revisa permisos RLS o la disponibilidad de Supabase. No se muestran
+            detalles sensibles.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {metrics.map((metric) => (
+              <MetricCard key={metric.label} {...metric} />
+            ))}
+          </div>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[1.5fr_0.9fr]">
-        <section>
-          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
+          <div className="mt-8 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+            <section>
+              <div className="mb-4">
+                <p className="text-sm font-semibold uppercase tracking-[0.22em] text-emerald-300">
+                  Señal destacada
+                </p>
+                <h2 className="mt-2 text-2xl font-bold tracking-tight">
+                  Mayor score activo ahora
+                </h2>
+              </div>
+              {featuredSignal ? (
+                <SignalSummaryCard signal={featuredSignal} />
+              ) : (
+                <EmptyActiveState isAdmin={isAdmin} />
+              )}
+            </section>
+
+            <aside className="rounded-2xl border border-white/10 bg-zinc-950/80 p-6 shadow-2xl shadow-black/30">
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-emerald-300">
-                Últimas señales
+                Accesos rápidos
               </p>
-              <h2 className="mt-2 text-2xl font-bold tracking-tight">
-                {activeSignals.length > 0
-                  ? "Las 5 lecturas activas más recientes"
-                  : "Histórico reciente como referencia"}
-              </h2>
-            </div>
-            <Link
-              href="/signals"
-              className="text-sm font-semibold text-emerald-300 transition hover:text-emerald-200"
-            >
-              Ver todas
-            </Link>
+              <div className="mt-5 grid gap-3">
+                {quickLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-zinc-200 transition hover:border-emerald-400/40 hover:text-emerald-200"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </aside>
           </div>
 
-          {error ? (
-            <div className="rounded-2xl border border-red-400/20 bg-red-400/10 p-6 text-red-100 shadow-2xl shadow-black/30">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-red-300">
-                Error de lectura
-              </p>
-              <h3 className="mt-3 text-2xl font-bold">
-                No se pudieron cargar las señales.
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-red-100/80">
-                Revisa permisos RLS o la disponibilidad de Supabase. No se
-                muestran detalles sensibles.
-              </p>
+          <section className="mt-8">
+            <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.22em] text-emerald-300">
+                  Top activos vigilados
+                </p>
+                <h2 className="mt-2 text-2xl font-bold tracking-tight">
+                  Las 5 señales activas de mayor score
+                </h2>
+              </div>
+              <Link
+                href="/signals?status=active"
+                className="text-sm font-semibold text-emerald-300 transition hover:text-emerald-200"
+              >
+                Ver todas
+              </Link>
             </div>
-          ) : latestSignals.length > 0 ? (
-            <SignalTable signals={latestSignals} />
-          ) : (
-            <div className="rounded-2xl border border-white/10 bg-zinc-950/80 p-8 text-center shadow-2xl shadow-black/30">
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-300">
-                Sin señales
-              </p>
-              <h3 className="mt-4 text-2xl font-bold tracking-tight">
-                Aún no hay registros recientes.
-              </h3>
-              <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-zinc-400">
-                Cuando el motor genere señales, aparecerán aquí desde la más
-                reciente.
-              </p>
-            </div>
-          )}
-        </section>
 
-        <aside className="rounded-2xl border border-white/10 bg-zinc-950/80 p-6 shadow-2xl shadow-black/30">
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-emerald-300">
-            Pulso operativo
-          </p>
-          <h2 className="mt-4 text-2xl font-bold">Lectura de señales</h2>
-          <p className="mt-3 text-sm leading-6 text-zinc-400">
-            Este panel prioriza señales activas. Si no hay vigentes, usa el
-            histórico reciente como referencia visual sin ejecutar llamadas
-            nuevas a Binance desde el panel.
-          </p>
-          <div className="mt-6 grid gap-3 text-sm text-zinc-300">
-            <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4">
-              <SignalBadge signal="LONG" />
-              <span>
-                {longSignals} {metricScope}
-              </span>
-            </div>
-            <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4">
-              <SignalBadge signal="SHORT" />
-              <span>
-                {shortSignals} {metricScope}
-              </span>
-            </div>
-            <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4">
-              <SignalBadge signal="WAIT" />
-              <span>
-                {waitSignals} {metricScope}
-              </span>
-            </div>
-          </div>
-        </aside>
-      </div>
+            {topWatchedSignals.length > 0 ? (
+              <div className="grid gap-4 lg:grid-cols-5">
+                {topWatchedSignals.map((signal) => (
+                  <article
+                    key={signal.id}
+                    className="rounded-2xl border border-white/10 bg-zinc-950/80 p-5 shadow-2xl shadow-black/30"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">
+                          Activo
+                        </p>
+                        <h3 className="mt-1 text-lg font-bold text-white">
+                          {formatPair(signal)}
+                        </h3>
+                      </div>
+                      <ScoreBadge score={signal.score} />
+                    </div>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <SignalBadge signal={signal.signal_type} />
+                      <RiskBadge risk={signal.risk} />
+                    </div>
+                    <div className="mt-4 flex items-center justify-between gap-3 text-xs text-zinc-500">
+                      <TrendBadge trend={signal.trend} />
+                      <span className="font-mono">
+                        {formatDate(signal.created_at)}
+                      </span>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <EmptyActiveState isAdmin={isAdmin} />
+            )}
+          </section>
+        </>
+      )}
     </AppShell>
   );
 }
