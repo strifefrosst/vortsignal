@@ -6,6 +6,7 @@ import SignalsFilterBar, {
 import SignalsGuide from "@/components/SignalsGuide";
 import { getEnabledAssets } from "@/lib/config/assets";
 import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
 
 type SignalRecord = {
   id: string;
@@ -27,6 +28,10 @@ type SignalRecord = {
   created_at: string | null;
 };
 
+type WatchlistRow = {
+  symbol: string;
+};
+
 type SignalsPageProps = {
   searchParams: Promise<{
     symbol?: string | string[];
@@ -34,6 +39,7 @@ type SignalsPageProps = {
     risk?: string | string[];
     minScore?: string | string[];
     status?: string | string[];
+    watchlist?: string | string[];
   }>;
 };
 
@@ -77,6 +83,7 @@ function parseFilters(
   const risk = firstParam(searchParams.risk)?.toUpperCase() ?? "";
   const minScore = firstParam(searchParams.minScore) ?? "";
   const status = firstParam(searchParams.status) ?? "active";
+  const watchlist = firstParam(searchParams.watchlist) === "true";
 
   return {
     symbol: firstParam(searchParams.symbol)?.toUpperCase() ?? "",
@@ -87,6 +94,7 @@ function parseFilters(
       status === "history" || status === "all" || status === "active"
         ? status
         : "active",
+    watchlist,
   };
 }
 
@@ -225,6 +233,69 @@ function EmptyFilteredSignals() {
   );
 }
 
+function WatchlistLoginState() {
+  return (
+    <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.06] p-10 text-center shadow-2xl shadow-black/30">
+      <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-300">
+        Watchlist privada
+      </p>
+      <h2 className="mt-4 text-3xl font-bold tracking-tight">
+        Inicia sesión para filtrar por tu watchlist.
+      </h2>
+      <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-zinc-400">
+        Tu lista de activos es personal. Accede a tu cuenta para ver solo las
+        señales de los mercados que has decidido vigilar.
+      </p>
+      <Link
+        href="/login"
+        className="mt-6 inline-flex rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-400 hover:text-black"
+      >
+        Iniciar sesión
+      </Link>
+    </div>
+  );
+}
+
+function EmptyWatchlistState() {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-zinc-950/80 p-10 text-center shadow-2xl shadow-black/30">
+      <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-300">
+        Watchlist vacía
+      </p>
+      <h2 className="mt-4 text-3xl font-bold tracking-tight">
+        Todavía no tienes activos vigilados.
+      </h2>
+      <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-zinc-400">
+        Configura tu watchlist para centrar las señales en los mercados que
+        quieres seguir de cerca.
+      </p>
+      <Link
+        href="/watchlist"
+        className="mt-6 inline-flex rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-400 hover:text-black"
+      >
+        Configurar watchlist
+      </Link>
+    </div>
+  );
+}
+
+function WatchlistReadError() {
+  return (
+    <div className="rounded-2xl border border-amber-400/20 bg-amber-400/10 p-6 text-amber-100 shadow-2xl shadow-black/30">
+      <p className="text-sm font-semibold uppercase tracking-[0.22em] text-amber-300">
+        Watchlist no disponible
+      </p>
+      <h2 className="mt-3 text-2xl font-bold">
+        No se pudo aplicar el filtro de watchlist.
+      </h2>
+      <p className="mt-2 text-sm leading-6 text-amber-100/80">
+        Prueba de nuevo en unos instantes o revisa las señales activas sin este
+        filtro.
+      </p>
+    </div>
+  );
+}
+
 function getSectionTitle(status: SignalsFilters["status"]) {
   if (status === "history") {
     return "Histórico filtrado";
@@ -253,6 +324,18 @@ export default async function SignalsPage({ searchParams }: SignalsPageProps) {
   const filters = parseFilters(await searchParams);
   const assets = getEnabledAssets();
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = filters.watchlist
+    ? await supabase.auth.getUser()
+    : { data: { user: null } };
+  const watchlistResult =
+    filters.watchlist && user
+      ? await supabase
+          .from("user_watchlist")
+          .select("symbol")
+          .eq("user_id", user.id)
+      : { data: null, error: null };
   const { data, error } = await supabase
     .from("signals")
     .select(
@@ -263,9 +346,20 @@ export default async function SignalsPage({ searchParams }: SignalsPageProps) {
 
   const now = new Date();
   const records = (data ?? []) as SignalRecord[];
-  const filteredRecords = records.filter((signal) =>
-    matchesFilters(signal, filters, now),
+  const watchlistSymbols = new Set(
+    ((watchlistResult.data ?? []) as WatchlistRow[]).map((row) => row.symbol),
   );
+  const filteredRecords = records.filter((signal) => {
+    if (!matchesFilters(signal, filters, now)) {
+      return false;
+    }
+
+    if (filters.watchlist) {
+      return Boolean(signal.symbol && watchlistSymbols.has(signal.symbol));
+    }
+
+    return true;
+  });
   const filteredSignals =
     filters.status === "active"
       ? getCurrentSignalsBySymbol(filteredRecords).map((signal) =>
@@ -287,7 +381,13 @@ export default async function SignalsPage({ searchParams }: SignalsPageProps) {
         resultCount={filteredSignals.length}
       />
 
-      {error ? (
+      {filters.watchlist && !user ? (
+        <WatchlistLoginState />
+      ) : filters.watchlist && watchlistResult.error ? (
+        <WatchlistReadError />
+      ) : filters.watchlist && watchlistSymbols.size === 0 ? (
+        <EmptyWatchlistState />
+      ) : error ? (
         <div className="rounded-2xl border border-red-400/20 bg-red-400/10 p-6 text-red-100 shadow-2xl shadow-black/30">
           <p className="text-sm font-semibold uppercase tracking-[0.22em] text-red-300">
             Error de lectura

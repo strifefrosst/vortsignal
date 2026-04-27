@@ -36,6 +36,7 @@ type WatchlistRow = {
 
 const quickLinks = [
   { href: "/signals?status=active", label: "Ver señales activas" },
+  { href: "/signals?status=active&watchlist=true", label: "Mi watchlist" },
   { href: "/signals?status=active&minScore=70", label: "Score 70+" },
   { href: "/signals?status=active&risk=HIGH", label: "Riesgo alto" },
   { href: "/signals?status=active&type=LONG", label: "Solo LONG" },
@@ -168,6 +169,84 @@ function WatchlistPanel({ symbols }: { symbols: string[] }) {
   );
 }
 
+function WatchlistSignalsPanel({
+  signals,
+  hasWatchlist,
+}: {
+  signals: SignalRecord[];
+  hasWatchlist: boolean;
+}) {
+  return (
+    <section className="mt-8 rounded-2xl border border-white/10 bg-zinc-950/80 p-6 shadow-2xl shadow-black/30">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-emerald-300">
+            Señales de mi watchlist
+          </p>
+          <h2 className="mt-2 text-2xl font-bold tracking-tight">
+            Mejores lecturas activas de tus activos
+          </h2>
+        </div>
+        <Link
+          href={
+            hasWatchlist
+              ? "/signals?status=active&watchlist=true"
+              : "/watchlist"
+          }
+          className="text-sm font-semibold text-emerald-300 transition hover:text-emerald-200"
+        >
+          {hasWatchlist ? "Ver filtro completo" : "Configurar watchlist"}
+        </Link>
+      </div>
+
+      {!hasWatchlist ? (
+        <div className="mt-5 rounded-xl border border-white/10 bg-black/40 p-5">
+          <p className="text-sm leading-6 text-zinc-400">
+            Añade activos a tu watchlist para que el panel priorice tus mercados
+            favoritos y muestre aquí sus mejores señales activas.
+          </p>
+        </div>
+      ) : signals.length > 0 ? (
+        <div className="mt-5 grid gap-4 lg:grid-cols-3">
+          {signals.slice(0, 5).map((signal) => (
+            <article
+              key={signal.id}
+              className="rounded-xl border border-white/10 bg-black/40 p-4"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">
+                    Activo
+                  </p>
+                  <h3 className="mt-1 text-lg font-bold text-white">
+                    {formatPair(signal)}
+                  </h3>
+                </div>
+                <ScoreBadge score={signal.score} />
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <SignalBadge signal={signal.signal_type} />
+                <RiskBadge risk={signal.risk} />
+                <TrendBadge trend={signal.trend} />
+              </div>
+              <p className="mt-4 font-mono text-xs text-zinc-500">
+                {formatDate(signal.created_at)}
+              </p>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <div className="mt-5 rounded-xl border border-white/10 bg-black/40 p-5">
+          <p className="text-sm leading-6 text-zinc-400">
+            Tu watchlist no tiene señales activas ahora mismo. Puedes revisar el
+            histórico o ampliar los activos vigilados.
+          </p>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function SignalSummaryCard({ signal }: { signal: SignalRecord }) {
   return (
     <article className="rounded-2xl border border-white/10 bg-zinc-950/80 p-5 shadow-2xl shadow-black/30">
@@ -286,29 +365,41 @@ export default async function DashboardPage() {
   const watchlistSymbols = ((watchlistResult.data ?? []) as WatchlistRow[]).map(
     (row) => row.symbol,
   );
+  const watchedSymbolSet = new Set(watchlistSymbols);
   const activeSignals = records.filter((signal) => isActiveSignal(signal, now));
   const sortedActiveSignals = sortByScoreDesc(activeSignals);
-  const featuredSignal = sortedActiveSignals[0];
+  const watchlistActiveSignals = sortByScoreDesc(
+    activeSignals.filter((signal) =>
+      Boolean(signal.symbol && watchedSymbolSet.has(signal.symbol)),
+    ),
+  );
+  const hasWatchlist = watchlistSymbols.length > 0;
+  const prioritySignals = hasWatchlist ? watchlistActiveSignals : activeSignals;
+  const sortedPrioritySignals = sortByScoreDesc(prioritySignals);
+  const featuredSignal = sortedPrioritySignals[0];
   const topWatchedSignals = sortedActiveSignals.slice(0, 5);
   const isAdmin = isAdminEmail(user.email);
-  const averageScore = calculateAverageScore(activeSignals);
-  const longSignals = countBySignalType(activeSignals, "LONG");
-  const shortSignals = countBySignalType(activeSignals, "SHORT");
-  const waitSignals = countBySignalType(activeSignals, "WAIT");
-  const highRiskSignals = countByRisk(activeSignals, "HIGH");
-  const mediumRiskSignals = countByRisk(activeSignals, "MEDIUM");
-  const lowRiskSignals = countByRisk(activeSignals, "LOW");
+  const averageScore = calculateAverageScore(prioritySignals);
+  const longSignals = countBySignalType(prioritySignals, "LONG");
+  const shortSignals = countBySignalType(prioritySignals, "SHORT");
+  const waitSignals = countBySignalType(prioritySignals, "WAIT");
+  const highRiskSignals = countByRisk(prioritySignals, "HIGH");
+  const mediumRiskSignals = countByRisk(prioritySignals, "MEDIUM");
+  const lowRiskSignals = countByRisk(prioritySignals, "LOW");
+  const metricsScope = hasWatchlist
+    ? "en activos de tu watchlist"
+    : "en todo el mercado";
   const metrics = [
     {
       label: "Señales activas",
-      value: String(activeSignals.length),
-      detail: "Lecturas vigentes por ventana operativa",
+      value: String(prioritySignals.length),
+      detail: `Lecturas vigentes ${metricsScope}`,
       accent: "emerald" as const,
     },
     {
       label: "Score medio",
       value: averageScore > 0 ? String(averageScore) : "-",
-      detail: "Media de señales activas con score",
+      detail: `Media de señales activas ${metricsScope}`,
       accent: "blue" as const,
     },
     {
@@ -408,6 +499,11 @@ export default async function DashboardPage() {
           </div>
 
           <WatchlistPanel symbols={watchlistSymbols} />
+
+          <WatchlistSignalsPanel
+            signals={watchlistActiveSignals}
+            hasWatchlist={hasWatchlist}
+          />
 
           <section className="mt-8">
             <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">

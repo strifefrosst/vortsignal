@@ -7,6 +7,7 @@ export type SignalsFilters = {
   risk: string;
   minScore: string;
   status: "active" | "history" | "all";
+  watchlist: boolean;
 };
 
 type SignalsFilterBarProps = {
@@ -158,6 +159,22 @@ export default function SignalsFilterBar({
           </select>
           <span className="normal-case tracking-normal text-zinc-600">
             Activas por defecto.
+          </span>
+        </label>
+
+        <label className="flex min-h-11 items-center gap-3 rounded-xl border border-white/10 bg-black px-3 py-2 text-sm font-semibold text-zinc-200 md:col-span-2">
+          <input
+            type="checkbox"
+            name="watchlist"
+            value="true"
+            defaultChecked={filters.watchlist}
+            className="h-4 w-4 rounded border-white/20 bg-zinc-950 accent-emerald-400"
+          />
+          <span>
+            Solo mi watchlist
+            <span className="mt-1 block text-xs font-normal text-zinc-600">
+              Muestra solo activos que has marcado para vigilar.
+            </span>
           </span>
         </label>
 
