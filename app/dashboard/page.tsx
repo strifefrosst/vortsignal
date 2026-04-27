@@ -30,6 +30,10 @@ type SignalRecord = {
   created_at: string | null;
 };
 
+type WatchlistRow = {
+  symbol: string;
+};
+
 const quickLinks = [
   { href: "/signals?status=active", label: "Ver señales activas" },
   { href: "/signals?status=active&minScore=70", label: "Score 70+" },
@@ -119,6 +123,49 @@ function isActiveSignal(signal: SignalRecord, now: Date) {
 
 function sortByScoreDesc(signals: SignalRecord[]) {
   return [...signals].sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
+}
+
+function WatchlistPanel({ symbols }: { symbols: string[] }) {
+  return (
+    <section className="mt-8 rounded-2xl border border-white/10 bg-zinc-950/80 p-6 shadow-2xl shadow-black/30">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-emerald-300">
+            Mi watchlist
+          </p>
+          <h2 className="mt-2 text-2xl font-bold tracking-tight">
+            Activos que sigues de cerca
+          </h2>
+        </div>
+        <Link
+          href="/watchlist"
+          className="text-sm font-semibold text-emerald-300 transition hover:text-emerald-200"
+        >
+          Configurar lista
+        </Link>
+      </div>
+
+      {symbols.length > 0 ? (
+        <div className="mt-5 flex flex-wrap gap-3">
+          {symbols.map((symbol) => (
+            <span
+              key={symbol}
+              className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 font-mono text-sm font-semibold text-emerald-200"
+            >
+              {symbol}
+            </span>
+          ))}
+        </div>
+      ) : (
+        <div className="mt-5 rounded-xl border border-white/10 bg-black/40 p-5">
+          <p className="text-sm leading-6 text-zinc-400">
+            Todavía no has elegido activos. Configura tu watchlist para tener
+            tus mercados favoritos siempre a mano.
+          </p>
+        </div>
+      )}
+    </section>
+  );
 }
 
 function SignalSummaryCard({ signal }: { signal: SignalRecord }) {
@@ -219,16 +266,26 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const { data, error } = await supabase
-    .from("signals")
-    .select(
-      "id, symbol, base_asset, quote_asset, signal_type, score, risk, timeframe, price, reason, rsi, sma20, volume_ratio, trend, source, expires_at, created_at",
-    )
-    .order("created_at", { ascending: false })
-    .limit(100);
+  const [signalsResult, watchlistResult] = await Promise.all([
+    supabase
+      .from("signals")
+      .select(
+        "id, symbol, base_asset, quote_asset, signal_type, score, risk, timeframe, price, reason, rsi, sma20, volume_ratio, trend, source, expires_at, created_at",
+      )
+      .order("created_at", { ascending: false })
+      .limit(100),
+    supabase
+      .from("user_watchlist")
+      .select("symbol")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false }),
+  ]);
 
   const now = new Date();
-  const records = (data ?? []) as SignalRecord[];
+  const records = (signalsResult.data ?? []) as SignalRecord[];
+  const watchlistSymbols = ((watchlistResult.data ?? []) as WatchlistRow[]).map(
+    (row) => row.symbol,
+  );
   const activeSignals = records.filter((signal) => isActiveSignal(signal, now));
   const sortedActiveSignals = sortByScoreDesc(activeSignals);
   const featuredSignal = sortedActiveSignals[0];
@@ -294,7 +351,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {error ? (
+      {signalsResult.error ? (
         <div className="rounded-2xl border border-red-400/20 bg-red-400/10 p-6 text-red-100 shadow-2xl shadow-black/30">
           <p className="text-sm font-semibold uppercase tracking-[0.22em] text-red-300">
             Error de lectura
@@ -349,6 +406,8 @@ export default async function DashboardPage() {
               </div>
             </aside>
           </div>
+
+          <WatchlistPanel symbols={watchlistSymbols} />
 
           <section className="mt-8">
             <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">

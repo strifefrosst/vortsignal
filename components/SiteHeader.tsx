@@ -3,6 +3,7 @@ import Link from "next/link";
 const navigation = [
   { href: "/dashboard", label: "Panel" },
   { href: "/signals", label: "Señales" },
+  { href: "/watchlist", label: "Mi lista" },
   { href: "/market", label: "Mercado" },
   { href: "/pricing", label: "Planes" },
 ];
