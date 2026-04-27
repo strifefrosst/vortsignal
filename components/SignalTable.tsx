@@ -1,11 +1,14 @@
-import type { RiskLevel } from "@/lib/mockSignals";
+import RiskBadge from "@/components/RiskBadge";
+import ScoreBadge from "@/components/ScoreBadge";
+import SignalBadge from "@/components/SignalBadge";
+import TrendBadge from "@/components/TrendBadge";
 
 export type SignalTableRow = {
   id?: string;
   pair: string;
   signal: string;
   score: number | null;
-  risk: RiskLevel | string | null;
+  risk: string | null;
   timeframe: string | null;
   date: string;
   price?: number | null;
@@ -19,46 +22,12 @@ type SignalTableProps = {
   signals: SignalTableRow[];
 };
 
-const riskClasses: Record<RiskLevel, string> = {
-  Bajo: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
-  Medio: "border-sky-400/30 bg-sky-400/10 text-sky-300",
-  Alto: "border-violet-400/30 bg-violet-400/10 text-violet-300",
-};
-
-function getRiskClass(risk: SignalTableRow["risk"]) {
-  if (risk === "Bajo" || risk === "Medio" || risk === "Alto") {
-    return riskClasses[risk];
-  }
-
-  return "border-white/10 bg-white/[0.03] text-zinc-300";
-}
-
 function formatIndicator(value: number | null | undefined, digits = 1) {
   if (typeof value !== "number" || !Number.isFinite(value)) {
     return "-";
   }
 
   return value.toFixed(digits);
-}
-
-function formatTrend(trend: string | null | undefined) {
-  if (!trend) {
-    return "Sin dato";
-  }
-
-  return trend.charAt(0).toUpperCase() + trend.slice(1);
-}
-
-function getTrendClass(trend: string | null | undefined) {
-  if (trend === "alcista" || trend === "bullish") {
-    return "border-emerald-400/30 bg-emerald-400/10 text-emerald-300";
-  }
-
-  if (trend === "bajista" || trend === "bearish") {
-    return "border-red-400/30 bg-red-400/10 text-red-300";
-  }
-
-  return "border-white/10 bg-white/[0.03] text-zinc-300";
 }
 
 export default function SignalTable({ signals }: SignalTableProps) {
@@ -89,7 +58,7 @@ export default function SignalTable({ signals }: SignalTableProps) {
                   {signal.pair}
                 </td>
                 <td className="px-5 py-4">
-                  <div>{signal.signal}</div>
+                  <SignalBadge signal={signal.signal} />
                   {signal.reason ? (
                     <div className="mt-1 max-w-sm truncate text-xs text-zinc-500">
                       {signal.reason}
@@ -97,9 +66,7 @@ export default function SignalTable({ signals }: SignalTableProps) {
                   ) : null}
                 </td>
                 <td className="px-5 py-4">
-                  <span className="rounded-full bg-emerald-400/10 px-3 py-1 text-emerald-300">
-                    {signal.score ?? "-"}
-                  </span>
+                  <ScoreBadge score={signal.score} />
                 </td>
                 <td className="px-5 py-4">
                   <span className="rounded-full border border-sky-400/20 bg-sky-400/10 px-3 py-1 text-xs font-semibold text-sky-200">
@@ -112,18 +79,10 @@ export default function SignalTable({ signals }: SignalTableProps) {
                   </span>
                 </td>
                 <td className="px-5 py-4">
-                  <span
-                    className={`rounded-full border px-3 py-1 text-xs font-semibold ${getTrendClass(signal.trend)}`}
-                  >
-                    {formatTrend(signal.trend)}
-                  </span>
+                  <TrendBadge trend={signal.trend} />
                 </td>
                 <td className="px-5 py-4">
-                  <span
-                    className={`rounded-full border px-3 py-1 text-xs font-semibold ${getRiskClass(signal.risk)}`}
-                  >
-                    {signal.risk ?? "Sin dato"}
-                  </span>
+                  <RiskBadge risk={signal.risk} />
                 </td>
                 <td className="px-5 py-4 text-zinc-400">
                   {signal.timeframe ?? "-"}

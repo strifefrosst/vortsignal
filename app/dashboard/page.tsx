@@ -1,6 +1,7 @@
 import AppShell from "@/components/AppShell";
 import LogoutButton from "@/components/LogoutButton";
 import MetricCard from "@/components/MetricCard";
+import SignalBadge from "@/components/SignalBadge";
 import SignalTable, { type SignalTableRow } from "@/components/SignalTable";
 import { isAdminEmail } from "@/lib/auth/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -257,14 +258,23 @@ export default async function DashboardPage() {
             nuevas a Binance desde el panel.
           </p>
           <div className="mt-6 grid gap-3 text-sm text-zinc-300">
-            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-              LONG: {longSignals} {metricScope}.
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4">
+              <SignalBadge signal="LONG" />
+              <span>
+                {longSignals} {metricScope}
+              </span>
             </div>
-            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-              SHORT: {shortSignals} {metricScope}.
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4">
+              <SignalBadge signal="SHORT" />
+              <span>
+                {shortSignals} {metricScope}
+              </span>
             </div>
-            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-              WAIT: {waitSignals} {metricScope}.
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4">
+              <SignalBadge signal="WAIT" />
+              <span>
+                {waitSignals} {metricScope}
+              </span>
             </div>
           </div>
         </aside>
