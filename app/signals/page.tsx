@@ -1,5 +1,9 @@
 import AppShell from "@/components/AppShell";
 import SignalTable, { type SignalTableRow } from "@/components/SignalTable";
+import SignalsFilterBar, {
+  type SignalsFilters,
+} from "@/components/SignalsFilterBar";
+import { getEnabledAssets } from "@/lib/config/assets";
 import { createClient } from "@/lib/supabase/server";
 
 type SignalRecord = {
@@ -20,6 +24,16 @@ type SignalRecord = {
   source: string | null;
   expires_at: string | null;
   created_at: string | null;
+};
+
+type SignalsPageProps = {
+  searchParams: Promise<{
+    symbol?: string | string[];
+    type?: string | string[];
+    risk?: string | string[];
+    minScore?: string | string[];
+    status?: string | string[];
+  }>;
 };
 
 function formatPair(signal: SignalRecord) {
@@ -51,6 +65,30 @@ function formatDate(value: string | null) {
     .replace(",", " ·");
 }
 
+function firstParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function parseFilters(
+  searchParams: Awaited<SignalsPageProps["searchParams"]>,
+): SignalsFilters {
+  const type = firstParam(searchParams.type)?.toUpperCase() ?? "";
+  const risk = firstParam(searchParams.risk)?.toUpperCase() ?? "";
+  const minScore = firstParam(searchParams.minScore) ?? "";
+  const status = firstParam(searchParams.status) ?? "active";
+
+  return {
+    symbol: firstParam(searchParams.symbol)?.toUpperCase() ?? "",
+    type: ["LONG", "SHORT", "WAIT"].includes(type) ? type : "",
+    risk: ["LOW", "MEDIUM", "HIGH"].includes(risk) ? risk : "",
+    minScore: ["60", "70", "80"].includes(minScore) ? minScore : "",
+    status:
+      status === "history" || status === "all" || status === "active"
+        ? status
+        : "active",
+  };
+}
+
 function mapSignal(signal: SignalRecord): SignalTableRow {
   return {
     id: signal.id,
@@ -74,6 +112,10 @@ function isActiveSignal(signal: SignalRecord, now: Date) {
   }
 
   return new Date(signal.expires_at) > now;
+}
+
+function isHistorySignal(signal: SignalRecord, now: Date) {
+  return Boolean(signal.expires_at && new Date(signal.expires_at) <= now);
 }
 
 function getSignalKey(signal: SignalRecord) {
@@ -105,6 +147,42 @@ function getCurrentSignalsBySymbol(signals: SignalRecord[]) {
   );
 }
 
+function matchesFilters(
+  signal: SignalRecord,
+  filters: SignalsFilters,
+  now: Date,
+) {
+  if (filters.status === "active" && !isActiveSignal(signal, now)) {
+    return false;
+  }
+
+  if (filters.status === "history" && !isHistorySignal(signal, now)) {
+    return false;
+  }
+
+  if (filters.symbol && signal.symbol !== filters.symbol) {
+    return false;
+  }
+
+  if (filters.type && signal.signal_type !== filters.type) {
+    return false;
+  }
+
+  if (filters.risk && signal.risk !== filters.risk) {
+    return false;
+  }
+
+  if (filters.minScore) {
+    const minScore = Number(filters.minScore);
+
+    if (typeof signal.score !== "number" || signal.score < minScore) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 function SignalSection({
   title,
   description,
@@ -129,41 +207,50 @@ function SignalSection({
   );
 }
 
-function EmptyActiveSignals() {
+function EmptyFilteredSignals() {
   return (
     <div className="rounded-2xl border border-white/10 bg-zinc-950/80 p-10 text-center shadow-2xl shadow-black/30">
       <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-300">
-        Señales activas
+        Sin resultados
       </p>
       <h2 className="mt-4 text-3xl font-bold tracking-tight">
-        No hay señales vigentes ahora mismo.
+        No hay señales que coincidan con los filtros.
       </h2>
       <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-zinc-400">
-        Cuando el motor genere nuevas oportunidades aparecerán aquí hasta su
-        vencimiento operativo.
+        Prueba con otro activo, baja el score mínimo o cambia el estado para
+        revisar el histórico completo.
       </p>
     </div>
   );
 }
 
-function EmptyRecentHistory() {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-zinc-950/80 p-8 text-center shadow-2xl shadow-black/30">
-      <p className="text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
-        Histórico reciente
-      </p>
-      <h2 className="mt-4 text-2xl font-bold tracking-tight">
-        Aún no hay señales cerradas para revisar.
-      </h2>
-      <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-zinc-400">
-        Cuando una señal llegue a su vencimiento, aparecerá aquí con su contexto
-        para facilitar el seguimiento.
-      </p>
-    </div>
-  );
+function getSectionTitle(status: SignalsFilters["status"]) {
+  if (status === "history") {
+    return "Histórico filtrado";
+  }
+
+  if (status === "all") {
+    return "Señales filtradas";
+  }
+
+  return "Señales activas filtradas";
 }
 
-export default async function SignalsPage() {
+function getSectionDescription(status: SignalsFilters["status"]) {
+  if (status === "history") {
+    return "Señales caducadas que coinciden con los filtros aplicados.";
+  }
+
+  if (status === "all") {
+    return "Todas las señales disponibles que coinciden con los filtros aplicados.";
+  }
+
+  return "Última lectura vigente por activo, ordenada por score descendente.";
+}
+
+export default async function SignalsPage({ searchParams }: SignalsPageProps) {
+  const filters = parseFilters(await searchParams);
+  const assets = getEnabledAssets();
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("signals")
@@ -175,13 +262,15 @@ export default async function SignalsPage() {
 
   const now = new Date();
   const records = (data ?? []) as SignalRecord[];
-  const activeRecords = records.filter((signal) => isActiveSignal(signal, now));
-  const activeSignals = getCurrentSignalsBySymbol(activeRecords).map((signal) =>
-    mapSignal(signal),
+  const filteredRecords = records.filter((signal) =>
+    matchesFilters(signal, filters, now),
   );
-  const expiredSignals = records
-    .filter((signal) => signal.expires_at && new Date(signal.expires_at) <= now)
-    .map((signal) => mapSignal(signal));
+  const filteredSignals =
+    filters.status === "active"
+      ? getCurrentSignalsBySymbol(filteredRecords).map((signal) =>
+          mapSignal(signal),
+        )
+      : filteredRecords.map((signal) => mapSignal(signal));
 
   return (
     <AppShell
@@ -189,16 +278,11 @@ export default async function SignalsPage() {
       title="Señales de mercado para detectar oportunidades sin ruido."
       description="Consulta tus señales más recientes, priorizadas por vigencia, score y contexto operativo."
     >
-      <div className="mb-5 flex flex-wrap gap-3" aria-label="Etiquetas de referencia">
-        {["Spot", "Futuros", "Score 70+", "Riesgo bajo/medio"].map((filter) => (
-          <span
-            key={filter}
-            className="rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-zinc-300"
-          >
-            {filter}
-          </span>
-        ))}
-      </div>
+      <SignalsFilterBar
+        assets={assets}
+        filters={filters}
+        resultCount={filteredSignals.length}
+      />
 
       {error ? (
         <div className="rounded-2xl border border-red-400/20 bg-red-400/10 p-6 text-red-100 shadow-2xl shadow-black/30">
@@ -213,41 +297,14 @@ export default async function SignalsPage() {
             funcionando sin mostrar claves ni detalles sensibles.
           </p>
         </div>
-      ) : records.length > 0 ? (
-        <div className="grid gap-10">
-          {activeSignals.length > 0 ? (
-            <SignalSection
-              title="Señales activas"
-              description="La señal actual representa la última lectura vigente del motor para cada activo, ordenada por score descendente."
-              signals={activeSignals}
-            />
-          ) : (
-            <EmptyActiveSignals />
-          )}
-
-          {expiredSignals.length > 0 ? (
-            <SignalSection
-              title="Histórico reciente"
-              description="Señales caducadas recientemente, conservadas para revisar contexto y trazabilidad."
-              signals={expiredSignals}
-            />
-          ) : (
-            <EmptyRecentHistory />
-          )}
-        </div>
+      ) : filteredSignals.length > 0 ? (
+        <SignalSection
+          title={getSectionTitle(filters.status)}
+          description={getSectionDescription(filters.status)}
+          signals={filteredSignals}
+        />
       ) : (
-        <div className="rounded-2xl border border-white/10 bg-zinc-950/80 p-10 text-center shadow-2xl shadow-black/30">
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-300">
-            Sin señales
-          </p>
-          <h2 className="mt-4 text-3xl font-bold tracking-tight">
-            Todavía no hay oportunidades registradas.
-          </h2>
-          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-zinc-400">
-            Cuando haya señales disponibles, aparecerán aquí ordenadas desde la
-            más reciente.
-          </p>
-        </div>
+        <EmptyFilteredSignals />
       )}
     </AppShell>
   );
