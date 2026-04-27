@@ -1,4 +1,5 @@
 import { getEnabledAssets } from "@/lib/config/assets";
+import { getUserPlan } from "@/lib/plans/server";
 import { createClient } from "@/lib/supabase/server";
 
 function isEnabledSymbol(symbol: string) {
@@ -86,6 +87,39 @@ export async function POST(request: Request) {
     }
 
     return Response.redirect(new URL("/watchlist", request.url), 303);
+  }
+
+  const userPlan = await getUserPlan(user.id);
+  const watchlistLimit = userPlan.plan.watchlistLimit;
+
+  if (watchlistLimit !== null) {
+    const { data: currentWatchlist, error: countError } = await supabase
+      .from("user_watchlist")
+      .select("symbol")
+      .eq("user_id", user.id);
+
+    if (countError) {
+      return Response.json(
+        {
+          error: "No se pudo validar el limite de tu watchlist.",
+        },
+        {
+          status: 500,
+        },
+      );
+    }
+
+    if ((currentWatchlist ?? []).length >= watchlistLimit) {
+      return Response.json(
+        {
+          error:
+            "Has alcanzado el limite de tu plan. Quita un activo o sube a Pro.",
+        },
+        {
+          status: 403,
+        },
+      );
+    }
   }
 
   const { error } = await supabase.from("user_watchlist").insert({

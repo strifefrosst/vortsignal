@@ -7,6 +7,7 @@ const navigation = [
   { href: "/alerts", label: "Alertas" },
   { href: "/market", label: "Mercado" },
   { href: "/pricing", label: "Planes" },
+  { href: "/account", label: "Cuenta" },
 ];
 
 export default function SiteHeader() {

@@ -6,6 +6,7 @@ import ScoreBadge from "@/components/ScoreBadge";
 import SignalBadge from "@/components/SignalBadge";
 import TrendBadge from "@/components/TrendBadge";
 import { isAdminEmail } from "@/lib/auth/admin";
+import { getUserPlan } from "@/lib/plans/server";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -421,7 +422,7 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const [signalsResult, watchlistResult, notificationsResult] = await Promise.all([
+  const [signalsResult, watchlistResult, notificationsResult, userPlan] = await Promise.all([
     supabase
       .from("signals")
       .select(
@@ -440,6 +441,7 @@ export default async function DashboardPage() {
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(3),
+    getUserPlan(user.id),
   ]);
 
   const now = new Date();
@@ -463,6 +465,7 @@ export default async function DashboardPage() {
   const featuredSignal = sortedPrioritySignals[0];
   const topWatchedSignals = sortedActiveSignals.slice(0, 5);
   const isAdmin = isAdminEmail(user.email);
+  const plan = userPlan.plan;
   const averageScore = calculateAverageScore(prioritySignals);
   const longSignals = countBySignalType(prioritySignals, "LONG");
   const shortSignals = countBySignalType(prioritySignals, "SHORT");
@@ -511,9 +514,20 @@ export default async function DashboardPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-300">
             Usuario conectado
           </p>
-          <p className="mt-1 text-sm text-zinc-300">{user.email}</p>
+          <div className="mt-2 flex flex-wrap items-center gap-3">
+            <p className="text-sm text-zinc-300">{user.email}</p>
+            <span className="rounded-full border border-emerald-400/35 bg-emerald-400/10 px-3 py-1 text-xs font-black text-emerald-200">
+              Plan {plan.badgeLabel}
+            </span>
+          </div>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <Link
+            href="/account"
+            className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-semibold text-zinc-200 transition hover:border-emerald-400/40 hover:text-emerald-200"
+          >
+            Cuenta
+          </Link>
           {isAdmin ? (
             <Link
               href="/admin/signals"
@@ -525,6 +539,22 @@ export default async function DashboardPage() {
           <LogoutButton />
         </div>
       </div>
+
+      {plan.id === "FREE" ? (
+        <div className="mb-6 rounded-2xl border border-sky-400/20 bg-sky-400/[0.06] p-4 shadow-2xl shadow-black/20">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <p className="text-sm leading-6 text-sky-100/85">
+              Desbloquea mas activos y filtros avanzados con Pro.
+            </p>
+            <Link
+              href="/pricing"
+              className="text-sm font-semibold text-sky-200 transition hover:text-white"
+            >
+              Ver planes
+            </Link>
+          </div>
+        </div>
+      ) : null}
 
       {signalsResult.error ? (
         <div className="rounded-2xl border border-red-400/20 bg-red-400/10 p-6 text-red-100 shadow-2xl shadow-black/30">

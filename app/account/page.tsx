@@ -1,0 +1,141 @@
+import AppShell from "@/components/AppShell";
+import LogoutButton from "@/components/LogoutButton";
+import { formatWatchlistLimit } from "@/lib/plans/config";
+import { getUserPlan } from "@/lib/plans/server";
+import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+
+function formatPeriodEnd(value: string | null) {
+  if (!value) {
+    return "Sin fecha de renovacion";
+  }
+
+  return new Intl.DateTimeFormat("es-ES", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
+export default async function AccountPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const userPlan = await getUserPlan(user.id);
+  const plan = userPlan.plan;
+
+  return (
+    <AppShell
+      eyebrow="CUENTA"
+      title="Tu plan y limites actuales."
+      description="Revisa el acceso disponible para tu cuenta antes de que activemos pagos."
+    >
+      <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+        <section className="rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.06] p-6 shadow-2xl shadow-black/30">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-300">
+                Sesion activa
+              </p>
+              <h2 className="mt-3 text-2xl font-bold tracking-tight text-white">
+                {user.email}
+              </h2>
+            </div>
+            <span className="w-fit rounded-full border border-emerald-400/40 bg-emerald-400/10 px-4 py-2 text-sm font-black text-emerald-200">
+              {plan.badgeLabel}
+            </span>
+          </div>
+
+          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-xl border border-white/10 bg-black/30 p-4">
+              <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">
+                Plan
+              </p>
+              <p className="mt-2 text-xl font-bold text-white">{plan.name}</p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-black/30 p-4">
+              <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">
+                Estado
+              </p>
+              <p className="mt-2 text-xl font-bold text-white">
+                {userPlan.status}
+              </p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-black/30 p-4">
+              <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">
+                Periodo
+              </p>
+              <p className="mt-2 text-sm font-semibold text-white">
+                {formatPeriodEnd(userPlan.currentPeriodEnd)}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link
+              href="/pricing"
+              className="rounded-xl bg-emerald-400 px-4 py-3 text-sm font-bold text-black transition hover:bg-emerald-300"
+            >
+              Ver planes
+            </Link>
+            <LogoutButton />
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-white/10 bg-zinc-950/80 p-6 shadow-2xl shadow-black/30">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-300">
+            Limites incluidos
+          </p>
+          <h2 className="mt-3 text-2xl font-bold tracking-tight text-white">
+            {plan.description}
+          </h2>
+
+          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-xl border border-white/10 bg-black/30 p-4">
+              <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">
+                Watchlist
+              </p>
+              <p className="mt-2 font-semibold text-white">
+                {formatWatchlistLimit(plan.watchlistLimit)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-black/30 p-4">
+              <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">
+                Alertas
+              </p>
+              <p className="mt-2 font-semibold text-white">
+                {plan.alertsEnabled ? "Activas" : "No incluidas"}
+              </p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-black/30 p-4">
+              <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">
+                Filtros
+              </p>
+              <p className="mt-2 font-semibold text-white">
+                {plan.advancedFiltersEnabled ? "Avanzados" : "Basicos"}
+              </p>
+            </div>
+          </div>
+
+          <ul className="mt-6 grid gap-3 text-sm text-zinc-300">
+            {plan.features.map((feature) => (
+              <li
+                key={feature}
+                className="rounded-xl border border-white/10 bg-white/[0.03] p-4"
+              >
+                {feature}
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
+    </AppShell>
+  );
+}
