@@ -1,27 +1,11 @@
 import "server-only";
 
+import { getEnabledAssets } from "@/lib/config/assets";
 import { getMarketSnapshots } from "@/lib/market/binance";
 import { scoreSignal } from "@/lib/signals/scoring";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 type SignalSource = "admin" | "cron" | "external";
-
-function splitSymbol(symbol: string) {
-  const quoteAssets = ["USDC", "USDT", "BTC", "ETH"];
-  const quoteAsset = quoteAssets.find((quote) => symbol.endsWith(quote));
-
-  if (!quoteAsset) {
-    return {
-      base_asset: symbol,
-      quote_asset: "",
-    };
-  }
-
-  return {
-    base_asset: symbol.slice(0, -quoteAsset.length),
-    quote_asset: quoteAsset,
-  };
-}
 
 function getExpiresAt() {
   const expiresAt = new Date();
@@ -35,14 +19,18 @@ export async function generateSignals(source: SignalSource = "external") {
     getMarketSnapshots(),
     Promise.resolve(createAdminClient()),
   ]);
+  const assetsBySymbol = new Map(
+    getEnabledAssets().map((asset) => [asset.symbol, asset]),
+  );
 
   const generatedSignals = snapshots.map((snapshot) => {
     const score = scoreSignal(snapshot);
-    const assets = splitSymbol(snapshot.symbol);
+    const asset = assetsBySymbol.get(snapshot.symbol);
 
     return {
       symbol: snapshot.symbol,
-      ...assets,
+      base_asset: asset?.baseAsset ?? snapshot.baseAsset,
+      quote_asset: asset?.quoteAsset ?? snapshot.quoteAsset,
       signal_type: score.signal_type,
       score: score.score,
       risk: score.risk,
@@ -57,6 +45,13 @@ export async function generateSignals(source: SignalSource = "external") {
       expires_at: getExpiresAt(),
     };
   });
+
+  if (generatedSignals.length === 0) {
+    return {
+      inserted: 0,
+      signals: [],
+    };
+  }
 
   const { data, error } = await supabase
     .from("signals")

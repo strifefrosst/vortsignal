@@ -53,6 +53,9 @@ function MarketCard({ snapshot }: { snapshot: MarketSnapshot }) {
           <h2 className="mt-2 text-3xl font-black tracking-tight text-white">
             {snapshot.symbol}
           </h2>
+          <p className="mt-1 text-sm text-zinc-500">
+            {snapshot.name} - {snapshot.baseAsset}/{snapshot.quoteAsset}
+          </p>
         </div>
         <span
           className={`rounded-full border px-3 py-1 text-xs font-semibold ${trendClass(snapshot.trend)}`}
@@ -113,7 +116,7 @@ export default async function MarketPage() {
     <AppShell
       eyebrow="MERCADO"
       title="Pulso público de mercado, sin claves y sin operativa."
-      description="Lectura de velas 1h para BTCUSDC, ETHUSDC y SOLUSDC con indicadores básicos."
+      description="Lectura de velas 1h para los activos habilitados, ordenados por prioridad."
     >
       {hasError ? (
         <div className="rounded-2xl border border-red-400/20 bg-red-400/10 p-8 shadow-2xl shadow-black/30">
@@ -126,6 +129,19 @@ export default async function MarketPage() {
           <p className="mt-2 max-w-2xl text-sm leading-6 text-red-100/80">
             Puede ser un fallo temporal de red o de la API pública. La app no
             usa claves, no opera y no guarda datos en Supabase.
+          </p>
+        </div>
+      ) : snapshots.length === 0 ? (
+        <div className="rounded-2xl border border-white/10 bg-zinc-950/80 p-8 text-center shadow-2xl shadow-black/30">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
+            Sin datos
+          </p>
+          <h2 className="mt-4 text-2xl font-bold tracking-tight">
+            No hay activos disponibles ahora mismo.
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-zinc-400">
+            Si Binance no devuelve velas válidas para los activos habilitados,
+            el mercado queda temporalmente sin snapshot.
           </p>
         </div>
       ) : (

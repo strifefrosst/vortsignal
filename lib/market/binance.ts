@@ -1,7 +1,7 @@
+import { getEnabledAssets, type SupportedAsset } from "@/lib/config/assets";
 import { rsi14, sma, trend, volumeRatio, type Trend } from "./indicators";
 
 const BINANCE_DATA_BASE_URL = "https://data-api.binance.vision";
-const DEFAULT_SYMBOLS = ["BTCUSDC", "ETHUSDC", "SOLUSDC"] as const;
 
 type BinanceKline = [
   number,
@@ -30,6 +30,10 @@ export type MarketKline = {
 
 export type MarketSnapshot = {
   symbol: string;
+  baseAsset: string;
+  quoteAsset: string;
+  name: string;
+  priority: number;
   price: number;
   rsi: number | null;
   sma20: number | null;
@@ -85,20 +89,26 @@ export async function fetchKlines(symbol: string) {
   return data.map(parseKline);
 }
 
-export async function getMarketSnapshot(symbol = ""): Promise<MarketSnapshot> {
-  const klines = await fetchKlines(symbol);
+export async function getMarketSnapshot(
+  asset: SupportedAsset,
+): Promise<MarketSnapshot> {
+  const klines = await fetchKlines(asset.symbol);
   const closes = klines.map((kline) => kline.close);
   const volumes = klines.map((kline) => kline.volume);
   const lastKline = klines.at(-1);
 
   if (!lastKline) {
-    throw new Error(`Binance returned no candles for ${symbol}.`);
+    throw new Error(`Binance returned no candles for ${asset.symbol}.`);
   }
 
   const sma20 = sma(closes, 20);
 
   return {
-    symbol,
+    symbol: asset.symbol,
+    baseAsset: asset.baseAsset,
+    quoteAsset: asset.quoteAsset,
+    name: asset.name,
+    priority: asset.priority,
     price: lastKline.close,
     rsi: rsi14(closes),
     sma20,
@@ -109,7 +119,15 @@ export async function getMarketSnapshot(symbol = ""): Promise<MarketSnapshot> {
 }
 
 export async function getMarketSnapshots() {
-  return Promise.all(
-    DEFAULT_SYMBOLS.map((symbol) => getMarketSnapshot(symbol)),
+  const results = await Promise.allSettled(
+    getEnabledAssets().map((asset) => getMarketSnapshot(asset)),
   );
+
+  return results
+    .filter(
+      (result): result is PromiseFulfilledResult<MarketSnapshot> =>
+        result.status === "fulfilled",
+    )
+    .map((result) => result.value)
+    .sort((a, b) => a.priority - b.priority);
 }
