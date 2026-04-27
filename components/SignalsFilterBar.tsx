@@ -35,7 +35,7 @@ const minScores = [
 
 const statuses = [
   { value: "active", label: "Activas" },
-  { value: "history", label: "Historico" },
+  { value: "history", label: "Histórico" },
   { value: "all", label: "Todas" },
 ];
 
@@ -81,6 +81,9 @@ export default function SignalsFilterBar({
               </option>
             ))}
           </select>
+          <span className="normal-case tracking-normal text-zinc-600">
+            Filtra por un mercado concreto.
+          </span>
         </label>
 
         <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
@@ -97,6 +100,9 @@ export default function SignalsFilterBar({
               </option>
             ))}
           </select>
+          <span className="normal-case tracking-normal text-zinc-600">
+            LONG, SHORT o espera.
+          </span>
         </label>
 
         <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
@@ -113,10 +119,13 @@ export default function SignalsFilterBar({
               </option>
             ))}
           </select>
+          <span className="normal-case tracking-normal text-zinc-600">
+            Nivel técnico del setup.
+          </span>
         </label>
 
         <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
-          Score
+          Score mínimo
           <select
             name="minScore"
             defaultValue={filters.minScore}
@@ -129,10 +138,13 @@ export default function SignalsFilterBar({
               </option>
             ))}
           </select>
+          <span className="normal-case tracking-normal text-zinc-600">
+            Confluencia mínima.
+          </span>
         </label>
 
         <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
-          Estado
+          Estado de señal
           <select
             name="status"
             defaultValue={filters.status}
@@ -144,6 +156,9 @@ export default function SignalsFilterBar({
               </option>
             ))}
           </select>
+          <span className="normal-case tracking-normal text-zinc-600">
+            Activas por defecto.
+          </span>
         </label>
 
         <button

@@ -3,6 +3,7 @@ import SignalTable, { type SignalTableRow } from "@/components/SignalTable";
 import SignalsFilterBar, {
   type SignalsFilters,
 } from "@/components/SignalsFilterBar";
+import SignalsGuide from "@/components/SignalsGuide";
 import { getEnabledAssets } from "@/lib/config/assets";
 import { createClient } from "@/lib/supabase/server";
 
@@ -278,6 +279,8 @@ export default async function SignalsPage({ searchParams }: SignalsPageProps) {
       title="Señales de mercado para detectar oportunidades sin ruido."
       description="Consulta tus señales más recientes, priorizadas por vigencia, score y contexto operativo."
     >
+      <SignalsGuide />
+
       <SignalsFilterBar
         assets={assets}
         filters={filters}
