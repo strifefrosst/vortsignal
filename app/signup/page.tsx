@@ -24,12 +24,12 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
     }
 
     if (!password) {
-      redirect("/signup?error=El%20password%20es%20obligatorio");
+      redirect("/signup?error=La%20contrase%C3%B1a%20es%20obligatoria");
     }
 
     if (password.length < 8) {
       redirect(
-        "/signup?error=El%20password%20debe%20tener%20al%20menos%208%20caracteres",
+        "/signup?error=La%20contrase%C3%B1a%20debe%20tener%20al%20menos%208%20caracteres",
       );
     }
 
@@ -66,8 +66,8 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
             Crea tu acceso a VortSignal.
           </h1>
           <p className="mt-6 max-w-xl text-base leading-7 text-zinc-400">
-            Registro real con Supabase Auth. Todavia no hay pagos, Binance ni
-            tablas de señales reales conectadas.
+            Registro real con Supabase Auth para acceder al panel privado de
+            señales y mercado.
           </p>
         </div>
 
@@ -77,7 +77,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
         >
           <h2 className="text-2xl font-bold">Crear cuenta</h2>
           <p className="mt-2 text-sm text-zinc-500">
-            Usa email y password para entrar a la beta.
+            Usa email y contraseña para entrar a la beta.
           </p>
 
           {error ? (
@@ -97,12 +97,12 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
               className="mt-2 w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-white outline-none ring-emerald-400/30 placeholder:text-zinc-600 invalid:border-red-400/50 invalid:text-red-100 focus:ring-4"
             />
             <span id="signup-email-help" className="mt-2 block text-xs text-zinc-500">
-              Obligatorio. Usa un email valido para confirmar tu acceso.
+              Obligatorio. Usa un email válido para confirmar tu acceso.
             </span>
           </label>
 
           <label className="mt-4 block text-sm font-medium text-zinc-300">
-            Password
+            Contraseña
             <input
               name="password"
               type="password"
@@ -116,7 +116,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
               id="signup-password-help"
               className="mt-2 block text-xs text-zinc-500"
             >
-              Obligatorio. Minimo 8 caracteres.
+              Obligatorio. Mínimo 8 caracteres.
             </span>
           </label>
 
@@ -128,9 +128,9 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
           </button>
 
           <p className="mt-5 text-center text-sm text-zinc-500">
-            Ya tienes cuenta?{" "}
+            ¿Ya tienes cuenta?{" "}
             <Link href="/login" className="text-emerald-300">
-              Iniciar sesion
+              Iniciar sesión
             </Link>
           </p>
         </form>

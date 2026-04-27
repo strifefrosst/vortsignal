@@ -75,7 +75,7 @@ export default function SignalTable({ signals }: SignalTableProps) {
               <th className="px-5 py-4 font-semibold">Volumen</th>
               <th className="px-5 py-4 font-semibold">Tendencia</th>
               <th className="px-5 py-4 font-semibold">Riesgo</th>
-              <th className="px-5 py-4 font-semibold">Timeframe</th>
+              <th className="px-5 py-4 font-semibold">Marco</th>
               <th className="px-5 py-4 font-semibold">Fecha</th>
             </tr>
           </thead>
@@ -128,7 +128,9 @@ export default function SignalTable({ signals }: SignalTableProps) {
                 <td className="px-5 py-4 text-zinc-400">
                   {signal.timeframe ?? "-"}
                 </td>
-                <td className="px-5 py-4 text-zinc-500">{signal.date}</td>
+                <td className="whitespace-nowrap px-5 py-4 font-mono text-xs text-zinc-500">
+                  {signal.date}
+                </td>
               </tr>
             ))}
           </tbody>

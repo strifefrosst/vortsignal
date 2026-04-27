@@ -1,7 +1,7 @@
 import SignalCard from "./SignalCard";
 
 const signals = [
-  ["BTC/USDC", "82", "Long moderado", "Riesgo medio"],
+  ["BTC/USDC", "82", "Sesgo alcista", "Riesgo medio"],
   ["ETH/USDC", "74", "Esperar ruptura", "Riesgo medio"],
   ["SOL/USDC", "61", "Momentum débil", "Riesgo alto"],
 ] as const;

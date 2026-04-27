@@ -17,7 +17,7 @@ export async function GET(request: Request) {
 
   return NextResponse.redirect(
     new URL(
-      "/login?error=No%20se%20pudo%20confirmar%20la%20sesion",
+      "/login?error=No%20se%20pudo%20confirmar%20la%20sesi%C3%B3n",
       requestUrl.origin,
     ),
   );

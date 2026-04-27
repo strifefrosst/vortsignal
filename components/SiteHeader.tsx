@@ -1,9 +1,10 @@
 import Link from "next/link";
 
 const navigation = [
-  { href: "/dashboard", label: "Dashboard" },
+  { href: "/dashboard", label: "Panel" },
   { href: "/signals", label: "Señales" },
-  { href: "/pricing", label: "Pricing" },
+  { href: "/market", label: "Mercado" },
+  { href: "/pricing", label: "Planes" },
 ];
 
 export default function SiteHeader() {

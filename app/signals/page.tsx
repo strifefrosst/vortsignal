@@ -40,9 +40,15 @@ function formatDate(value: string | null) {
   }
 
   return new Intl.DateTimeFormat("es-ES", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  })
+    .format(new Date(value))
+    .replace(",", " ·");
 }
 
 function mapSignal(signal: SignalRecord): SignalTableRow {
@@ -140,6 +146,23 @@ function EmptyActiveSignals() {
   );
 }
 
+function EmptyRecentHistory() {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-zinc-950/80 p-8 text-center shadow-2xl shadow-black/30">
+      <p className="text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
+        Histórico reciente
+      </p>
+      <h2 className="mt-4 text-2xl font-bold tracking-tight">
+        Aún no hay señales cerradas para revisar.
+      </h2>
+      <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-zinc-400">
+        Cuando una señal llegue a su vencimiento, aparecerá aquí con su contexto
+        para facilitar el seguimiento.
+      </p>
+    </div>
+  );
+}
+
 export default async function SignalsPage() {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -162,11 +185,11 @@ export default async function SignalsPage() {
 
   return (
     <AppShell
-      eyebrow="Signals"
-      title="Señales reales desde Supabase para explorar oportunidades sin ruido."
-      description="Lectura server-side de public.signals, ordenada por fecha de creacion descendente."
+      eyebrow="SEÑALES"
+      title="Señales de mercado para detectar oportunidades sin ruido."
+      description="Consulta tus señales más recientes, priorizadas por vigencia, score y contexto operativo."
     >
-      <div className="mb-5 flex flex-wrap gap-3">
+      <div className="mb-5 flex flex-wrap gap-3" aria-label="Etiquetas de referencia">
         {["Spot", "Futuros", "Score 70+", "Riesgo bajo/medio"].map((filter) => (
           <span
             key={filter}
@@ -202,11 +225,15 @@ export default async function SignalsPage() {
             <EmptyActiveSignals />
           )}
 
-          <SignalSection
-            title="Histórico reciente"
-            description="Señales caducadas recientemente, conservadas para revisar contexto y trazabilidad."
-            signals={expiredSignals}
-          />
+          {expiredSignals.length > 0 ? (
+            <SignalSection
+              title="Histórico reciente"
+              description="Señales caducadas recientemente, conservadas para revisar contexto y trazabilidad."
+              signals={expiredSignals}
+            />
+          ) : (
+            <EmptyRecentHistory />
+          )}
         </div>
       ) : (
         <div className="rounded-2xl border border-white/10 bg-zinc-950/80 p-10 text-center shadow-2xl shadow-black/30">
@@ -214,11 +241,11 @@ export default async function SignalsPage() {
             Sin señales
           </p>
           <h2 className="mt-4 text-3xl font-bold tracking-tight">
-            Todavia no hay oportunidades registradas.
+            Todavía no hay oportunidades registradas.
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-zinc-400">
-            Cuando existan filas en public.signals apareceran aqui ordenadas
-            desde la mas reciente.
+            Cuando haya señales disponibles, aparecerán aquí ordenadas desde la
+            más reciente.
           </p>
         </div>
       )}

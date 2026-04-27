@@ -16,7 +16,7 @@ export default function LogoutButton() {
         type="submit"
         className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2 text-sm font-semibold text-zinc-300 transition hover:border-emerald-400/40 hover:text-emerald-300"
       >
-        Cerrar sesion
+        Cerrar sesión
       </button>
     </form>
   );

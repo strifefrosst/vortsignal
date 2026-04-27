@@ -26,7 +26,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     });
 
     if (error) {
-      redirect("/login?error=No%20se%20pudo%20iniciar%20sesion");
+      redirect("/login?error=No%20se%20pudo%20iniciar%20sesi%C3%B3n");
     }
 
     redirect("/dashboard");
@@ -44,8 +44,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             Entra al panel privado de VortSignal.
           </h1>
           <p className="mt-6 max-w-xl text-base leading-7 text-zinc-400">
-            Acceso real con Supabase Auth para usuarios registrados. El
-            dashboard sigue usando datos mock hasta conectar fuentes reales.
+            Acceso real con Supabase Auth para usuarios registrados. El panel
+            muestra las señales disponibles y el contexto de mercado.
           </p>
         </div>
 
@@ -53,9 +53,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           action={signIn}
           className="rounded-2xl border border-white/10 bg-zinc-950/90 p-6 shadow-2xl shadow-black/40"
         >
-          <h2 className="text-2xl font-bold">Iniciar sesion</h2>
+          <h2 className="text-2xl font-bold">Iniciar sesión</h2>
           <p className="mt-2 text-sm text-zinc-500">
-            Usa tu email y password de Supabase.
+            Usa tu email y contraseña.
           </p>
 
           {message ? (
@@ -82,7 +82,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </label>
 
           <label className="mt-4 block text-sm font-medium text-zinc-300">
-            Password
+            Contraseña
             <input
               name="password"
               type="password"
@@ -96,11 +96,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             type="submit"
             className="mt-6 w-full rounded-xl bg-emerald-400 px-4 py-3 font-bold text-black transition hover:bg-emerald-300"
           >
-            Entrar al dashboard
+            Entrar al panel
           </button>
 
           <p className="mt-5 text-center text-sm text-zinc-500">
-            Sin cuenta todavia?{" "}
+            ¿Sin cuenta todavía?{" "}
             <Link href="/signup" className="text-emerald-300">
               Crear cuenta
             </Link>

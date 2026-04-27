@@ -2,10 +2,10 @@ import AppShell from "@/components/AppShell";
 
 const plans = [
   {
-    name: "Free",
+    name: "Gratis",
     price: "0 EUR",
     description: "Para validar el radar y revisar señales limitadas.",
-    features: ["3 señales semanales", "Score basico", "Watchlist limitada"],
+    features: ["3 señales semanales", "Score básico", "Lista limitada"],
   },
   {
     name: "Pro",
@@ -17,7 +17,7 @@ const plans = [
   {
     name: "Elite",
     price: "99 EUR",
-    description: "Para equipos pequenos y operativa mas intensiva.",
+    description: "Para equipos pequeños y operativa más intensiva.",
     features: ["Cobertura ampliada", "Riesgo por setup", "Soporte preferente"],
   },
 ];
@@ -25,9 +25,9 @@ const plans = [
 export default function PricingPage() {
   return (
     <AppShell
-      eyebrow="Pricing"
+      eyebrow="PLANES"
       title="Planes simples para crecer de radar a operativa."
-      description="Precios mock, sin Stripe ni pagos reales todavia."
+      description="Planes orientativos, sin pagos activos todavía."
     >
       <div className="grid gap-5 lg:grid-cols-3">
         {plans.map((plan) => (

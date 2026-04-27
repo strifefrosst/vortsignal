@@ -19,9 +19,15 @@ function formatNumber(value: number | null, digits = 2) {
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("es-ES", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  })
+    .format(new Date(value))
+    .replace(",", " ·");
 }
 
 function trendClass(trend: MarketSnapshot["trend"]) {
@@ -42,7 +48,7 @@ function MarketCard({ snapshot }: { snapshot: MarketSnapshot }) {
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">
-            Binance public data
+            DATOS DE MERCADO
           </p>
           <h2 className="mt-2 text-3xl font-black tracking-tight text-white">
             {snapshot.symbol}
@@ -78,7 +84,7 @@ function MarketCard({ snapshot }: { snapshot: MarketSnapshot }) {
         </div>
         <div className="rounded-xl border border-white/10 bg-black p-4">
           <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">
-            Vol ratio
+            Volumen
           </p>
           <p className="mt-2 text-xl font-bold text-violet-300">
             {formatNumber(snapshot.volumeRatio)}x
@@ -105,9 +111,9 @@ export default async function MarketPage() {
 
   return (
     <AppShell
-      eyebrow="Market"
-      title="Snapshot publico de mercado, sin claves y sin operativa."
-      description="Lectura de velas 1h desde Binance public data para BTCUSDC, ETHUSDC y SOLUSDC con indicadores basicos."
+      eyebrow="MERCADO"
+      title="Pulso público de mercado, sin claves y sin operativa."
+      description="Lectura de velas 1h para BTCUSDC, ETHUSDC y SOLUSDC con indicadores básicos."
     >
       {hasError ? (
         <div className="rounded-2xl border border-red-400/20 bg-red-400/10 p-8 shadow-2xl shadow-black/30">
@@ -118,7 +124,7 @@ export default async function MarketPage() {
             No se pudo cargar el snapshot de mercado.
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-red-100/80">
-            Puede ser un fallo temporal de red o de la API publica. La app no
+            Puede ser un fallo temporal de red o de la API pública. La app no
             usa claves, no opera y no guarda datos en Supabase.
           </p>
         </div>

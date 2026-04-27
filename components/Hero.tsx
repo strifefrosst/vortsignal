@@ -19,7 +19,7 @@ export default function Hero() {
           href="#dashboard"
           className="rounded-xl bg-emerald-400 px-6 py-3 font-semibold text-black hover:bg-emerald-300"
         >
-          Ver dashboard
+          Ver panel
         </a>
 
         <a

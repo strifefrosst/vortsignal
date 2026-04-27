@@ -22,14 +22,14 @@ export default async function SupabaseDebugPage() {
     <main className="min-h-screen bg-black px-6 py-12 text-white">
       <section className="mx-auto max-w-3xl rounded-2xl border border-white/10 bg-zinc-950 p-6 shadow-2xl shadow-black/40">
         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-300">
-          Supabase debug
+          Diagnóstico Supabase
         </p>
         <h1 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
-          Comprobacion segura del cliente server
+          Comprobación segura del cliente servidor
         </h1>
         <p className="mt-3 text-sm leading-6 text-zinc-400">
-          Esta pagina solo valida presencia de configuracion y creacion del
-          cliente. No imprime claves ni conecta auth al login.
+          Esta página solo valida presencia de configuración y creación del
+          cliente. No imprime claves ni conecta auth al inicio de sesión.
         </p>
 
         <div className="mt-8 space-y-3">

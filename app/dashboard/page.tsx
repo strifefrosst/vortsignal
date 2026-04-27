@@ -45,9 +45,15 @@ function formatDate(value: string | null) {
   }
 
   return new Intl.DateTimeFormat("es-ES", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  })
+    .format(new Date(value))
+    .replace(",", " ·");
 }
 
 function mapSignal(signal: SignalRecord): SignalTableRow {
@@ -132,8 +138,8 @@ export default async function DashboardPage() {
       value: String(totalSignals),
       detail:
         activeSignals.length > 0
-          ? "Vigentes por expires_at o antiguas sin vencimiento"
-          : "Fallback visual con registros recientes",
+          ? "Vigentes por ventana operativa"
+          : "Referencia con registros recientes",
       accent: "emerald" as const,
     },
     {
@@ -158,9 +164,9 @@ export default async function DashboardPage() {
 
   return (
     <AppShell
-      eyebrow="Dashboard"
+      eyebrow="PANEL"
       title="Centro de mando para vigilar el mercado crypto."
-      description="Resumen real de señales generadas, score y direccion operativa desde Supabase."
+      description="Resumen de señales generadas, score medio y dirección operativa."
     >
       <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.06] p-4 md:flex-row md:items-center md:justify-between">
         <div>
@@ -198,7 +204,7 @@ export default async function DashboardPage() {
               <h2 className="mt-2 text-2xl font-bold tracking-tight">
                 {activeSignals.length > 0
                   ? "Las 5 lecturas activas más recientes"
-                  : "Fallback con histórico reciente"}
+                  : "Histórico reciente como referencia"}
               </h2>
             </div>
             <Link
@@ -230,10 +236,10 @@ export default async function DashboardPage() {
                 Sin señales
               </p>
               <h3 className="mt-4 text-2xl font-bold tracking-tight">
-                Aun no hay registros recientes.
+                Aún no hay registros recientes.
               </h3>
               <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-zinc-400">
-                Cuando el motor genere señales, apareceran aqui desde la mas
+                Cuando el motor genere señales, aparecerán aquí desde la más
                 reciente.
               </p>
             </div>
@@ -248,7 +254,7 @@ export default async function DashboardPage() {
           <p className="mt-3 text-sm leading-6 text-zinc-400">
             Este panel prioriza señales activas. Si no hay vigentes, usa el
             histórico reciente como referencia visual sin ejecutar llamadas
-            nuevas a Binance desde el dashboard.
+            nuevas a Binance desde el panel.
           </p>
           <div className="mt-6 grid gap-3 text-sm text-zinc-300">
             <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">

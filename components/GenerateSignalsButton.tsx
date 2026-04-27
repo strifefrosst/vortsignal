@@ -50,7 +50,7 @@ function getInsertedCount(payload: unknown) {
 export default function GenerateSignalsButton() {
   const [state, setState] = useState<GenerateState>({
     status: "idle",
-    message: "Listo para lanzar una generacion manual segura.",
+    message: "Listo para lanzar una generación manual segura.",
   });
 
   async function handleGenerate() {
