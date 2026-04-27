@@ -34,6 +34,15 @@ type WatchlistRow = {
   symbol: string;
 };
 
+type NotificationRecord = {
+  id: string;
+  symbol: string | null;
+  title: string | null;
+  body: string | null;
+  read_at: string | null;
+  created_at: string | null;
+};
+
 const quickLinks = [
   { href: "/signals?status=active", label: "Ver señales activas" },
   { href: "/signals?status=active&watchlist=true", label: "Mi watchlist" },
@@ -247,6 +256,73 @@ function WatchlistSignalsPanel({
   );
 }
 
+function RecentAlertsPanel({
+  notifications,
+}: {
+  notifications: NotificationRecord[];
+}) {
+  return (
+    <section className="mt-8 rounded-2xl border border-white/10 bg-zinc-950/80 p-6 shadow-2xl shadow-black/30">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-emerald-300">
+            Alertas recientes
+          </p>
+          <h2 className="mt-2 text-2xl font-bold tracking-tight">
+            Últimas notificaciones internas
+          </h2>
+        </div>
+        <Link
+          href="/alerts"
+          className="text-sm font-semibold text-emerald-300 transition hover:text-emerald-200"
+        >
+          Ver alertas
+        </Link>
+      </div>
+
+      {notifications.length > 0 ? (
+        <div className="mt-5 grid gap-3 lg:grid-cols-3">
+          {notifications.map((notification) => (
+            <article
+              key={notification.id}
+              className={`rounded-xl border p-4 ${
+                notification.read_at
+                  ? "border-white/10 bg-black/40"
+                  : "border-emerald-400/30 bg-emerald-400/[0.08]"
+              }`}
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 font-mono text-xs font-semibold text-zinc-300">
+                  {notification.symbol ?? "Mercado"}
+                </span>
+                <span className="text-xs font-semibold text-zinc-500">
+                  {notification.read_at ? "Leída" : "Nueva"}
+                </span>
+              </div>
+              <h3 className="mt-3 text-base font-bold text-white">
+                {notification.title ?? "Alerta de mercado"}
+              </h3>
+              <p className="mt-2 line-clamp-3 text-sm leading-6 text-zinc-400">
+                {notification.body ?? "Nueva lectura interna disponible."}
+              </p>
+              <p className="mt-3 font-mono text-xs text-zinc-500">
+                {formatDate(notification.created_at)}
+              </p>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <div className="mt-5 rounded-xl border border-white/10 bg-black/40 p-5">
+          <p className="text-sm leading-6 text-zinc-400">
+            Aún no tienes alertas internas. Configura tus preferencias para
+            recibir avisos cuando una señal encaje con tus criterios.
+          </p>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function SignalSummaryCard({ signal }: { signal: SignalRecord }) {
   return (
     <article className="rounded-2xl border border-white/10 bg-zinc-950/80 p-5 shadow-2xl shadow-black/30">
@@ -345,7 +421,7 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const [signalsResult, watchlistResult] = await Promise.all([
+  const [signalsResult, watchlistResult, notificationsResult] = await Promise.all([
     supabase
       .from("signals")
       .select(
@@ -358,6 +434,12 @@ export default async function DashboardPage() {
       .select("symbol")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false }),
+    supabase
+      .from("user_notifications")
+      .select("id, symbol, title, body, read_at, created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(3),
   ]);
 
   const now = new Date();
@@ -365,6 +447,8 @@ export default async function DashboardPage() {
   const watchlistSymbols = ((watchlistResult.data ?? []) as WatchlistRow[]).map(
     (row) => row.symbol,
   );
+  const recentNotifications =
+    (notificationsResult.data ?? []) as NotificationRecord[];
   const watchedSymbolSet = new Set(watchlistSymbols);
   const activeSignals = records.filter((signal) => isActiveSignal(signal, now));
   const sortedActiveSignals = sortByScoreDesc(activeSignals);
@@ -504,6 +588,8 @@ export default async function DashboardPage() {
             signals={watchlistActiveSignals}
             hasWatchlist={hasWatchlist}
           />
+
+          <RecentAlertsPanel notifications={recentNotifications} />
 
           <section className="mt-8">
             <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">

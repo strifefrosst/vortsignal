@@ -4,6 +4,7 @@ const navigation = [
   { href: "/dashboard", label: "Panel" },
   { href: "/signals", label: "Señales" },
   { href: "/watchlist", label: "Mi lista" },
+  { href: "/alerts", label: "Alertas" },
   { href: "/market", label: "Mercado" },
   { href: "/pricing", label: "Planes" },
 ];

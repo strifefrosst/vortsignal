@@ -2,6 +2,7 @@ import "server-only";
 
 import { getEnabledAssets } from "@/lib/config/assets";
 import { getMarketSnapshots } from "@/lib/market/binance";
+import { createNotificationsForSignals } from "@/lib/signals/notifications";
 import { scoreSignal } from "@/lib/signals/scoring";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -64,8 +65,11 @@ export async function generateSignals(source: SignalSource = "external") {
     throw new Error("Signal insert failed.");
   }
 
+  const notifications = await createNotificationsForSignals(data ?? []);
+
   return {
     inserted: data?.length ?? 0,
+    notifications,
     signals: data ?? [],
   };
 }
