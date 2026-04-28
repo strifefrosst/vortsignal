@@ -5,6 +5,8 @@ import SignalsFilterBar, {
 } from "@/components/SignalsFilterBar";
 import SignalsGuide from "@/components/SignalsGuide";
 import { getEnabledAssets } from "@/lib/config/assets";
+import { getDefaultPlanConfig } from "@/lib/plans/config";
+import { getUserPlan } from "@/lib/plans/server";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 
@@ -78,6 +80,7 @@ function firstParam(value: string | string[] | undefined) {
 
 function parseFilters(
   searchParams: Awaited<SignalsPageProps["searchParams"]>,
+  advancedFiltersEnabled: boolean,
 ): SignalsFilters {
   const type = firstParam(searchParams.type)?.toUpperCase() ?? "";
   const risk = firstParam(searchParams.risk)?.toUpperCase() ?? "";
@@ -87,9 +90,18 @@ function parseFilters(
 
   return {
     symbol: firstParam(searchParams.symbol)?.toUpperCase() ?? "",
-    type: ["LONG", "SHORT", "WAIT"].includes(type) ? type : "",
-    risk: ["LOW", "MEDIUM", "HIGH"].includes(risk) ? risk : "",
-    minScore: ["60", "70", "80"].includes(minScore) ? minScore : "",
+    type:
+      advancedFiltersEnabled && ["LONG", "SHORT", "WAIT"].includes(type)
+        ? type
+        : "",
+    risk:
+      advancedFiltersEnabled && ["LOW", "MEDIUM", "HIGH"].includes(risk)
+        ? risk
+        : "",
+    minScore:
+      advancedFiltersEnabled && ["60", "70", "80"].includes(minScore)
+        ? minScore
+        : "",
     status:
       status === "history" || status === "all" || status === "active"
         ? status
@@ -321,14 +333,22 @@ function getSectionDescription(status: SignalsFilters["status"]) {
 }
 
 export default async function SignalsPage({ searchParams }: SignalsPageProps) {
-  const filters = parseFilters(await searchParams);
   const assets = getEnabledAssets();
   const supabase = await createClient();
   const {
     data: { user },
-  } = filters.watchlist
-    ? await supabase.auth.getUser()
-    : { data: { user: null } };
+  } = await supabase.auth.getUser();
+  const userPlan = user
+    ? await getUserPlan(user.id)
+    : {
+        plan: getDefaultPlanConfig(),
+        status: "active",
+        currentPeriodEnd: null,
+      };
+  const filters = parseFilters(
+    await searchParams,
+    userPlan.plan.advancedFiltersEnabled,
+  );
   const watchlistResult =
     filters.watchlist && user
       ? await supabase
@@ -379,6 +399,7 @@ export default async function SignalsPage({ searchParams }: SignalsPageProps) {
         assets={assets}
         filters={filters}
         resultCount={filteredSignals.length}
+        advancedFiltersEnabled={userPlan.plan.advancedFiltersEnabled}
       />
 
       {filters.watchlist && !user ? (

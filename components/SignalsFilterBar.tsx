@@ -14,6 +14,7 @@ type SignalsFilterBarProps = {
   assets: SupportedAsset[];
   filters: SignalsFilters;
   resultCount: number;
+  advancedFiltersEnabled: boolean;
 };
 
 const signalTypes = [
@@ -36,17 +37,18 @@ const minScores = [
 
 const statuses = [
   { value: "active", label: "Activas" },
-  { value: "history", label: "Histórico" },
+  { value: "history", label: "Historico" },
   { value: "all", label: "Todas" },
 ];
 
 const selectClassName =
-  "h-11 rounded-xl border border-white/10 bg-black px-3 text-sm font-medium text-zinc-200 outline-none ring-emerald-400/20 transition focus:border-emerald-400/50 focus:ring-4";
+  "h-11 rounded-xl border border-white/10 bg-black px-3 text-sm font-medium text-zinc-200 outline-none ring-emerald-400/20 transition focus:border-emerald-400/50 focus:ring-4 disabled:cursor-not-allowed disabled:text-zinc-600";
 
 export default function SignalsFilterBar({
   assets,
   filters,
   resultCount,
+  advancedFiltersEnabled,
 }: SignalsFilterBarProps) {
   return (
     <section className="mb-8 rounded-2xl border border-white/10 bg-zinc-950/80 p-5 shadow-2xl shadow-black/30">
@@ -56,16 +58,23 @@ export default function SignalsFilterBar({
             Filtros
           </p>
           <p className="mt-2 text-sm text-zinc-400">
-            Mostrando {resultCount} señales filtradas
+            Mostrando {resultCount} senales filtradas
           </p>
         </div>
         <Link
-          href="/signals"
+          href={advancedFiltersEnabled ? "/signals" : "/pricing"}
           className="text-sm font-semibold text-emerald-300 transition hover:text-emerald-200"
         >
-          Limpiar filtros
+          {advancedFiltersEnabled ? "Limpiar filtros" : "Desbloquear Pro"}
         </Link>
       </div>
+
+      {!advancedFiltersEnabled ? (
+        <div className="mb-4 rounded-xl border border-sky-400/20 bg-sky-400/[0.06] px-4 py-3 text-sm text-sky-100/85">
+          Tu plan Free mantiene activos los filtros basicos. Pro desbloquea
+          tipo de senal, riesgo y score minimo.
+        </div>
+      ) : null}
 
       <form action="/signals" method="get" className="grid gap-3 md:grid-cols-6">
         <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500 md:col-span-2">
@@ -88,11 +97,12 @@ export default function SignalsFilterBar({
         </label>
 
         <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
-          Señal
+          Senal
           <select
             name="type"
             defaultValue={filters.type}
             className={selectClassName}
+            disabled={!advancedFiltersEnabled}
           >
             <option value="">Todas</option>
             {signalTypes.map((type) => (
@@ -102,7 +112,7 @@ export default function SignalsFilterBar({
             ))}
           </select>
           <span className="normal-case tracking-normal text-zinc-600">
-            LONG, SHORT o espera.
+            {advancedFiltersEnabled ? "LONG, SHORT o espera." : "Disponible en Pro."}
           </span>
         </label>
 
@@ -112,6 +122,7 @@ export default function SignalsFilterBar({
             name="risk"
             defaultValue={filters.risk}
             className={selectClassName}
+            disabled={!advancedFiltersEnabled}
           >
             <option value="">Todos</option>
             {riskLevels.map((risk) => (
@@ -121,16 +132,17 @@ export default function SignalsFilterBar({
             ))}
           </select>
           <span className="normal-case tracking-normal text-zinc-600">
-            Nivel técnico del setup.
+            {advancedFiltersEnabled ? "Nivel tecnico del setup." : "Disponible en Pro."}
           </span>
         </label>
 
         <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
-          Score mínimo
+          Score minimo
           <select
             name="minScore"
             defaultValue={filters.minScore}
             className={selectClassName}
+            disabled={!advancedFiltersEnabled}
           >
             <option value="">Cualquiera</option>
             {minScores.map((score) => (
@@ -140,12 +152,12 @@ export default function SignalsFilterBar({
             ))}
           </select>
           <span className="normal-case tracking-normal text-zinc-600">
-            Confluencia mínima.
+            {advancedFiltersEnabled ? "Confluencia minima." : "Disponible en Pro."}
           </span>
         </label>
 
         <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
-          Estado de señal
+          Estado de senal
           <select
             name="status"
             defaultValue={filters.status}
