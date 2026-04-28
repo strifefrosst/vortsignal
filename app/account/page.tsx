@@ -18,7 +18,11 @@ function formatPeriodEnd(value: string | null) {
   }).format(new Date(value));
 }
 
-export default async function AccountPage() {
+export default async function AccountPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ checkout?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -30,6 +34,8 @@ export default async function AccountPage() {
 
   const userPlan = await getUserPlan(user.id);
   const plan = userPlan.plan;
+  const resolvedSearchParams = await searchParams;
+  const checkoutStatus = resolvedSearchParams.checkout;
 
   return (
     <AppShell
@@ -77,6 +83,29 @@ export default async function AccountPage() {
               </p>
             </div>
           </div>
+
+          {checkoutStatus === "success" && (
+            <div className="mt-6 rounded-xl border border-emerald-400/40 bg-emerald-400/10 p-4">
+              <p className="font-semibold text-emerald-200">
+                ✓ Pago completado
+              </p>
+              <p className="mt-1 text-sm text-zinc-400">
+                Tu plan se actualizara en unos segundos. Si no ves los cambios,
+                recarga la pagina.
+              </p>
+            </div>
+          )}
+
+          {checkoutStatus === "cancel" && (
+            <div className="mt-6 rounded-xl border border-yellow-400/40 bg-yellow-400/10 p-4">
+              <p className="font-semibold text-yellow-200">
+                Checkout cancelado
+              </p>
+              <p className="mt-1 text-sm text-zinc-400">
+                Puedes intentar de nuevo cuando quieras.
+              </p>
+            </div>
+          )}
 
           <div className="mt-6 flex flex-wrap gap-3">
             <Link

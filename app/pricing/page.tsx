@@ -1,7 +1,10 @@
 import AppShell from "@/components/AppShell";
+import CheckoutButton from "@/components/CheckoutButton";
 import { formatWatchlistLimit, plans } from "@/lib/plans/config";
 import { getUserPlan } from "@/lib/plans/server";
 import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 
 export default async function PricingPage() {
   const supabase = await createClient();
@@ -65,13 +68,26 @@ export default async function PricingPage() {
                   </li>
                 ))}
               </ul>
-              <button className="mt-8 w-full rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-3 font-semibold text-emerald-200">
-                {isCurrent
-                  ? "Plan actual"
-                  : plan.id === "FREE"
-                    ? "Empezar gratis"
-                    : "Solicitar acceso"}
-              </button>
+              {isCurrent ? (
+                <button className="mt-8 w-full rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-3 font-semibold text-emerald-200">
+                  Plan actual
+                </button>
+              ) : plan.id === "FREE" ? (
+                <button className="mt-8 w-full rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-3 font-semibold text-emerald-200">
+                  Empezar gratis
+                </button>
+              ) : !user ? (
+                <Link
+                  href="/login"
+                  className="mt-8 block w-full rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-3 text-center font-semibold text-emerald-200"
+                >
+                  Iniciar sesion
+                </Link>
+              ) : (
+                <CheckoutButton plan={plan.id as "PRO" | "ELITE"}>
+                  Suscribirse
+                </CheckoutButton>
+              )}
             </div>
           );
         })}
