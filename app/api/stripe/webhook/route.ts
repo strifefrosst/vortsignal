@@ -40,9 +40,14 @@ export async function POST(request: Request) {
   try {
     switch (event.type) {
       case "checkout.session.completed": {
-        const session = event.data.object;
+        const session = event.data.object as Stripe.Checkout.Session & {
+          customer: string | null;
+          subscription: string | null;
+        };
         const userId = session.metadata?.user_id;
         const plan = session.metadata?.plan;
+        const stripeCustomerId = session.customer as string | null;
+        const stripeSubscriptionId = session.subscription as string | null;
 
         if (userId && (plan === "PRO" || plan === "ELITE")) {
           const { data, error: upsertError } = await adminClient
@@ -52,6 +57,8 @@ export async function POST(request: Request) {
                 user_id: userId,
                 plan: plan,
                 status: "active",
+                stripe_customer_id: stripeCustomerId,
+                stripe_subscription_id: stripeSubscriptionId,
                 updated_at: new Date().toISOString(),
               },
               {
@@ -63,7 +70,7 @@ export async function POST(request: Request) {
           if (upsertError) {
             console.error("Failed to upsert user plan:", upsertError);
           } else {
-            console.log(`Plan ${plan} activated for user ${userId}`);
+            console.log(`Plan ${plan} activated for user ${userId}, customer: ${stripeCustomerId}, subscription: ${stripeSubscriptionId}`);
           }
         }
         break;
@@ -90,6 +97,7 @@ export async function POST(request: Request) {
               current_period_end: new Date(
                 subscription.current_period_end * 1000
               ).toISOString(),
+              stripe_subscription_id: subscription.id,
               updated_at: new Date().toISOString(),
             })
             .eq("user_id", userId);
@@ -97,14 +105,16 @@ export async function POST(request: Request) {
           if (updateError) {
             console.error("Failed to update subscription:", updateError);
           } else {
-            console.log(`Subscription updated for user ${userId}`);
+            console.log(`Subscription ${subscription.id} updated for user ${userId}`);
           }
         }
         break;
       }
 
       case "customer.subscription.deleted": {
-        const subscription = event.data.object;
+        const subscription = event.data.object as Stripe.Subscription & {
+          id: string;
+        };
         const userId = subscription.metadata?.user_id;
 
         if (userId) {
@@ -113,6 +123,7 @@ export async function POST(request: Request) {
             .update({
               plan: "FREE",
               status: "active",
+              stripe_subscription_id: null,
               updated_at: new Date().toISOString(),
             })
             .eq("user_id", userId);
@@ -121,6 +132,33 @@ export async function POST(request: Request) {
             console.error("Failed to revert to FREE:", updateError);
           } else {
             console.log(`Subscription deleted for user ${userId}, reverted to FREE`);
+          }
+        } else {
+          // Try to find by stripe_subscription_id
+          const { data: existingPlan } = await adminClient
+            .from("user_plans")
+            .select("user_id")
+            .eq("stripe_subscription_id", subscription.id)
+            .maybeSingle();
+
+          if (existingPlan?.user_id) {
+            const { error: updateError } = await adminClient
+              .from("user_plans")
+              .update({
+                plan: "FREE",
+                status: "active",
+                stripe_subscription_id: null,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("user_id", existingPlan.user_id);
+
+            if (updateError) {
+              console.error("Failed to revert to FREE:", updateError);
+            } else {
+              console.log(`Subscription deleted for user ${existingPlan.user_id}, reverted to FREE`);
+            }
+          } else {
+            console.log(`Subscription ${subscription.id} deleted but no user mapping found`);
           }
         }
         break;

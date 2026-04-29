@@ -1,8 +1,10 @@
 import AppShell from "@/components/AppShell";
+import BillingPortalButton from "@/components/BillingPortalButton";
 import LogoutButton from "@/components/LogoutButton";
 import { formatWatchlistLimit } from "@/lib/plans/config";
 import { getUserPlan } from "@/lib/plans/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -36,6 +38,20 @@ export default async function AccountPage({
   const plan = userPlan.plan;
   const resolvedSearchParams = await searchParams;
   const checkoutStatus = resolvedSearchParams.checkout;
+
+  // Get stripe_customer_id for PRO/ELITE plans
+  let stripeCustomerId: string | null = null;
+  if (plan.id === "PRO" || plan.id === "ELITE") {
+    const adminClient = createAdminClient();
+    const { data: planData } = await adminClient
+      .from("user_plans")
+      .select("stripe_customer_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    stripeCustomerId = planData?.stripe_customer_id ?? null;
+  }
+
+  const isPaidPlan = plan.id === "PRO" || plan.id === "ELITE";
 
   return (
     <AppShell
@@ -108,14 +124,32 @@ export default async function AccountPage({
           )}
 
           <div className="mt-6 flex flex-wrap gap-3">
+            {isPaidPlan && stripeCustomerId ? (
+              <BillingPortalButton>Gestionar suscripcion</BillingPortalButton>
+            ) : isPaidPlan ? (
+              <span className="rounded-xl border border-yellow-400/20 bg-yellow-400/5 px-4 py-3 text-sm text-yellow-200">
+                Contacta soporte para gestionar tu suscripcion
+              </span>
+            ) : (
+              <Link
+                href="/pricing"
+                className="rounded-xl bg-emerald-400 px-4 py-3 text-sm font-bold text-black transition hover:bg-emerald-300"
+              >
+                Mejorar plan
+              </Link>
+            )}
             <Link
               href="/pricing"
-              className="rounded-xl bg-emerald-400 px-4 py-3 text-sm font-bold text-black transition hover:bg-emerald-300"
+              className="rounded-xl border border-white/20 bg-white/5 px-4 py-3 text-sm font-semibold text-zinc-200 transition hover:bg-white/10"
             >
               Ver planes
             </Link>
             <LogoutButton />
           </div>
+
+          <p className="mt-4 text-xs text-zinc-500">
+            La gestion de pagos se realiza de forma segura en Stripe.
+          </p>
         </section>
 
         <section className="rounded-2xl border border-white/10 bg-zinc-950/80 p-6 shadow-2xl shadow-black/30">

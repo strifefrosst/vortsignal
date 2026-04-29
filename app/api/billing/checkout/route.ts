@@ -60,6 +60,12 @@ export async function POST(request: Request) {
         user_id: user.id,
         plan: plan,
       },
+      subscription_data: {
+        metadata: {
+          user_id: user.id,
+          plan: plan,
+        },
+      },
     });
 
     if (!session.url) {
