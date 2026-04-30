@@ -95,6 +95,10 @@ export default async function PricingPage() {
           );
         })}
       </div>
+
+      <div className="mt-8 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-xs text-amber-200/80">
+        La suscripción no garantiza resultados financieros.
+      </div>
     </AppShell>
   );
 }

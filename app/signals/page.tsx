@@ -402,6 +402,10 @@ export default async function SignalsPage({ searchParams }: SignalsPageProps) {
         advancedFiltersEnabled={userPlan.plan.advancedFiltersEnabled}
       />
 
+      <div className="mt-4 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-xs text-amber-200/80">
+        Las señales son lecturas técnicas informativas, no recomendaciones personalizadas.
+      </div>
+
       {filters.watchlist && !user ? (
         <WatchlistLoginState />
       ) : filters.watchlist && watchlistResult.error ? (

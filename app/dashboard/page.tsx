@@ -556,6 +556,10 @@ export default async function DashboardPage() {
         </div>
       ) : null}
 
+      <div className="mb-6 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-xs text-amber-200/80">
+        Las señales son lecturas técnicas informativas, no recomendaciones personalizadas.
+      </div>
+
       {signalsResult.error ? (
         <div className="rounded-2xl border border-red-400/20 bg-red-400/10 p-6 text-red-100 shadow-2xl shadow-black/30">
           <p className="text-sm font-semibold uppercase tracking-[0.22em] text-red-300">
