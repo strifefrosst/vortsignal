@@ -69,9 +69,12 @@ export default async function PricingPage() {
                 ))}
               </ul>
               {isCurrent ? (
-                <button className="mt-8 w-full rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-3 font-semibold text-emerald-200">
-                  Plan actual
-                </button>
+                <Link
+                  href="/account"
+                  className="mt-8 w-full rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-3 text-center font-semibold text-emerald-200"
+                >
+                  Ir a mi cuenta
+                </Link>
               ) : plan.id === "FREE" ? (
                 <button className="mt-8 w-full rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-3 font-semibold text-emerald-200">
                   Empezar gratis
