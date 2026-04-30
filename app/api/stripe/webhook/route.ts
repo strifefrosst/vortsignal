@@ -44,35 +44,79 @@ export async function POST(request: Request) {
           customer: string | null;
           subscription: string | null;
         };
-        const userId = session.metadata?.user_id;
-        const plan = session.metadata?.plan;
-        const stripeCustomerId = session.customer as string | null;
-        const stripeSubscriptionId = session.subscription as string | null;
 
-        if (userId && (plan === "PRO" || plan === "ELITE")) {
-          const { data, error: upsertError } = await adminClient
-            .from("user_plans")
-            .upsert(
-              {
-                user_id: userId,
-                plan: plan,
-                status: "active",
-                stripe_customer_id: stripeCustomerId,
-                stripe_subscription_id: stripeSubscriptionId,
-                updated_at: new Date().toISOString(),
-              },
-              {
-                onConflict: "user_id",
-                ignoreDuplicates: false,
-              }
-            );
+        // Retrieve full session with expanded customer and subscription
+        const fullSession = await stripe.checkout.sessions.retrieve(
+          session.id,
+          { expand: ["customer", "subscription"] }
+        );
 
-          if (upsertError) {
-            console.error("Failed to upsert user plan:", upsertError);
-          } else {
-            console.log(`Plan ${plan} activated for user ${userId}, customer: ${stripeCustomerId}, subscription: ${stripeSubscriptionId}`);
-          }
+        // Get userId from metadata or client_reference_id
+        const userId = fullSession.metadata?.user_id || fullSession.client_reference_id;
+        const plan = fullSession.metadata?.plan;
+
+        // Get stripeCustomerId - handle both string and object
+        let stripeCustomerId: string | null = null;
+        if (fullSession.customer) {
+          stripeCustomerId = typeof fullSession.customer === "string"
+            ? fullSession.customer
+            : fullSession.customer.id;
         }
+
+        // Get stripeSubscriptionId - handle both string and object
+        let stripeSubscriptionId: string | null = null;
+        if (fullSession.subscription) {
+          stripeSubscriptionId = typeof fullSession.subscription === "string"
+            ? fullSession.subscription
+            : fullSession.subscription.id;
+        }
+
+        const hasUserId = !!userId;
+        const hasPlan = !!plan && (plan === "PRO" || plan === "ELITE");
+        const hasCustomer = !!stripeCustomerId;
+        const hasSubscription = !!stripeSubscriptionId;
+
+        // For subscription mode, require customer and subscription
+        if (fullSession.mode === "subscription" && (!hasCustomer || !hasSubscription)) {
+          console.error("checkout.session.completed: missing customer or subscription for subscription session");
+          return NextResponse.json(
+            { error: "Missing customer or subscription in subscription session" },
+            { status: 500 }
+          );
+        }
+
+        // If missing userId or plan, return 200 to avoid retrying invalid events
+        if (!hasUserId || !hasPlan) {
+          console.log(`checkout.session.completed: missing userId=${hasUserId}, plan=${plan || "missing"} - skipping`);
+          break;
+        }
+
+        const { error: upsertError } = await adminClient
+          .from("user_plans")
+          .upsert(
+            {
+              user_id: userId,
+              plan: plan,
+              status: "active",
+              stripe_customer_id: stripeCustomerId,
+              stripe_subscription_id: stripeSubscriptionId,
+              updated_at: new Date().toISOString(),
+            },
+            {
+              onConflict: "user_id",
+              ignoreDuplicates: false,
+            }
+          );
+
+        if (upsertError) {
+          console.error("checkout.session.completed: Supabase upsert failed:", upsertError);
+          return NextResponse.json(
+            { error: "Failed to persist user plan" },
+            { status: 500 }
+          );
+        }
+
+        console.log(`checkout.session.completed persisted: userId=${hasUserId}, plan=${plan}, customer=${hasCustomer}, subscription=${hasSubscription}`);
         break;
       }
 
