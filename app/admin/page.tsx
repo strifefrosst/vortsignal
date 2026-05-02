@@ -38,6 +38,12 @@ const adminTools = [
     icon: "📊",
   },
   {
+    href: "/admin/performance",
+    title: "Rendimiento",
+    description: "Revisar resultados posteriores de señales expiradas.",
+    icon: "📈",
+  },
+  {
     href: "/admin/signals",
     title: "Generar señales",
     description: "Lanzar generación manual de señales.",

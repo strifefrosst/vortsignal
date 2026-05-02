@@ -96,13 +96,22 @@ export default async function AdminStatusPage() {
               Panel privado para revisar integraciones, datos recientes y señales de salud del sistema.
             </p>
           </div>
-          <a
-            href="/admin/status"
-            className="inline-flex items-center gap-2 rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-200 hover:bg-emerald-400/20"
-          >
-            <span>🔄</span>
-            Actualizar estado
-          </a>
+          <div className="flex flex-wrap gap-3">
+            <a
+              href="/admin/status"
+              className="inline-flex items-center gap-2 rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-200 hover:bg-emerald-400/20"
+            >
+              <span>🔄</span>
+              Actualizar estado
+            </a>
+            <a
+              href="/admin/performance"
+              className="inline-flex items-center gap-2 rounded-xl border border-sky-400/40 bg-sky-400/10 px-4 py-2 text-sm font-semibold text-sky-200 hover:bg-sky-400/20"
+            >
+              <span>📈</span>
+              Rendimiento
+            </a>
+          </div>
         </div>
 
         {statusError && (
