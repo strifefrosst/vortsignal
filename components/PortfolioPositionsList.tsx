@@ -75,18 +75,18 @@ export default function PortfolioPositionsList({
       ) : null}
 
       {positions.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-white/10 bg-zinc-950/80 p-10 text-center shadow-xl shadow-black/20">
+        <div className="rounded-2xl border border-dashed border-white/10 bg-zinc-950/80 p-8 text-center shadow-lg shadow-black/10">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-300">
             Aún no hay posiciones
           </p>
-          <h2 className="mt-4 text-3xl font-semibold text-white">Añade tu primera posición</h2>
-          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-zinc-400">
+          <h2 className="mt-3 text-2xl font-semibold text-white">Añade tu primera posición</h2>
+          <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-zinc-400">
             Añade tu primera posición para empezar a calcular exposición y seguimiento.
           </p>
           <button
             type="button"
             onClick={scrollToForm}
-            className="mt-8 inline-flex items-center justify-center rounded-2xl border border-emerald-400/20 bg-emerald-400/10 px-5 py-3 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-400/15"
+            className="mt-6 inline-flex items-center justify-center rounded-xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-400/15"
           >
             Ir al formulario
           </button>
@@ -108,14 +108,14 @@ export default function PortfolioPositionsList({
                 : undefined;
 
             return (
-              <div key={position.id} className="rounded-3xl border border-white/10 bg-zinc-950/80 p-6 shadow-xl shadow-black/20">
+              <div key={position.id} className="rounded-2xl border border-white/10 bg-zinc-950/80 p-5 shadow-lg shadow-black/10">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="space-y-4">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <span className="rounded-2xl bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-sky-200">
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded-xl bg-white/5 px-2 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-sky-200">
                         {position.asset_type}
                       </span>
-                      <h3 className="text-2xl font-semibold text-white">{position.symbol}</h3>
+                      <h3 className="text-xl font-semibold text-white">{position.symbol}</h3>
                     </div>
                     <p className="text-sm text-zinc-400">{position.asset_name ?? "Activo manual"}</p>
                   </div>
@@ -124,27 +124,27 @@ export default function PortfolioPositionsList({
                     type="button"
                     onClick={() => handleDelete(position.id)}
                     disabled={deletingId === position.id}
-                    className="inline-flex items-center justify-center rounded-full border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-200 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex items-center justify-center rounded-full border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm font-semibold text-red-200 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {deletingId === position.id ? "Eliminando..." : "Eliminar"}
                   </button>
                 </div>
 
-                <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-3xl bg-white/5 p-5">
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-xl bg-white/5 p-4">
                     <p className="text-xs uppercase tracking-[0.24em] text-zinc-400">Invertido</p>
-                    <p className="mt-3 text-2xl font-semibold text-white">
+                    <p className="mt-2 text-lg font-semibold text-white">
                       {new Intl.NumberFormat("es-ES", {
                         style: "currency",
                         currency: position.currency || "USD",
                       }).format(investedValue)}
                     </p>
-                    <p className="mt-2 text-sm text-zinc-500">{position.quantity} × {position.average_price}</p>
+                    <p className="mt-1 text-xs text-zinc-500">{position.quantity} × {position.average_price}</p>
                   </div>
 
-                  <div className="rounded-3xl bg-white/5 p-5">
+                  <div className="rounded-xl bg-white/5 p-4">
                     <p className="text-xs uppercase tracking-[0.24em] text-zinc-400">Valor actual</p>
-                    <p className="mt-3 text-2xl font-semibold text-white">
+                    <p className="mt-2 text-lg font-semibold text-white">
                       {estimatedCurrentValue != null
                         ? new Intl.NumberFormat("es-ES", {
                             style: "currency",
@@ -153,7 +153,7 @@ export default function PortfolioPositionsList({
                         : "Pendiente"}
                     </p>
                     {estimatedCurrentValue != null ? (
-                      <p className="mt-2 text-sm text-zinc-500">
+                      <p className="mt-1 text-xs text-zinc-500">
                         {diffPercent != null
                           ? `${diffPercent >= 0 ? "+" : ""}${diffPercent.toFixed(2)}%`
                           : "--"}
@@ -162,18 +162,18 @@ export default function PortfolioPositionsList({
                   </div>
                 </div>
 
-                <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-3xl bg-zinc-950/80 p-4 text-sm text-zinc-300">
+                <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                  <div className="rounded-xl bg-zinc-950/80 p-3 text-sm text-zinc-300">
                     <p className="text-[0.68rem] uppercase tracking-[0.24em] text-zinc-500">Plataforma</p>
-                    <p className="mt-2 font-medium text-white">{position.platform ?? "Desconocida"}</p>
+                    <p className="mt-1 font-medium text-white">{position.platform ?? "Desconocida"}</p>
                   </div>
-                  <div className="rounded-3xl bg-zinc-950/80 p-4 text-sm text-zinc-300">
+                  <div className="rounded-xl bg-zinc-950/80 p-3 text-sm text-zinc-300">
                     <p className="text-[0.68rem] uppercase tracking-[0.24em] text-zinc-500">Moneda</p>
-                    <p className="mt-2 font-medium text-white">{position.currency}</p>
+                    <p className="mt-1 font-medium text-white">{position.currency}</p>
                   </div>
-                  <div className="rounded-3xl bg-zinc-950/80 p-4 text-sm text-zinc-300">
+                  <div className="rounded-xl bg-zinc-950/80 p-3 text-sm text-zinc-300">
                     <p className="text-[0.68rem] uppercase tracking-[0.24em] text-zinc-500">Notas</p>
-                    <p className="mt-2 font-medium text-white">{position.notes ?? "—"}</p>
+                    <p className="mt-1 font-medium text-white">{position.notes ?? "—"}</p>
                   </div>
                 </div>
               </div>

@@ -92,7 +92,7 @@ export default function PortfolioPositionForm({}: PortfolioPositionFormProps) {
     <form
       id="portfolio-form"
       onSubmit={handleSubmit}
-      className="rounded-3xl border border-white/10 bg-gradient-to-br from-zinc-950/90 via-zinc-950/80 to-zinc-950/90 p-6 shadow-2xl shadow-black/30"
+      className="rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-950/90 via-zinc-950/80 to-zinc-950/90 p-6 shadow-lg shadow-black/30"
     >
       <div className="mb-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -100,13 +100,13 @@ export default function PortfolioPositionForm({}: PortfolioPositionFormProps) {
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-300">
               Añadir posición
             </p>
-            <h2 className="mt-2 text-3xl font-semibold text-white">Añadir nueva posición</h2>
+            <h2 className="mt-1 text-2xl font-semibold text-white">Añadir nueva posición</h2>
           </div>
           <span className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.16em] text-zinc-300">
             Manual
           </span>
         </div>
-        <p className="mt-3 text-sm leading-6 text-zinc-400">
+        <p className="mt-2 text-sm leading-6 text-zinc-400">
           Puedes registrar activos aunque todavía no tengan precio conectado.
         </p>
       </div>
