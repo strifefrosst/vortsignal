@@ -27,6 +27,12 @@ export default function SiteFooter() {
               Guía
             </Link>
             <Link 
+              href="/portfolio" 
+              className="text-zinc-400 hover:text-emerald-400 transition-colors"
+            >
+              Portafolio
+            </Link>
+            <Link 
               href="/roadmap" 
               className="text-zinc-400 hover:text-emerald-400 transition-colors"
             >

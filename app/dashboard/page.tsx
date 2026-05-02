@@ -45,6 +45,11 @@ type NotificationRecord = {
   created_at: string | null;
 };
 
+type PortfolioPositionRecord = {
+  quantity: number | null;
+  average_price: number | null;
+};
+
 const quickLinks = [
   { href: "/signals?status=active", label: "Ver señales activas" },
   { href: "/signals?status=active&watchlist=true", label: "Mi watchlist" },
@@ -423,7 +428,7 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const [signalsResult, watchlistResult, notificationsResult, userPlan] = await Promise.all([
+  const [signalsResult, watchlistResult, notificationsResult, portfolioResult, userPlan] = await Promise.all([
     supabase
       .from("signals")
       .select(
@@ -442,6 +447,10 @@ export default async function DashboardPage() {
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(3),
+    supabase
+      .from("user_portfolio_positions")
+      .select("quantity, average_price")
+      .eq("user_id", user.id),
     getUserPlan(user.id),
   ]);
 
@@ -450,6 +459,13 @@ export default async function DashboardPage() {
   const watchlistSymbols = ((watchlistResult.data ?? []) as WatchlistRow[]).map(
     (row) => row.symbol,
   );
+  const portfolioPositions = ((portfolioResult.data ?? []) as PortfolioPositionRecord[]).filter(
+    (position) => typeof position.quantity === "number" && typeof position.average_price === "number",
+  );
+  const portfolioCount = portfolioPositions.length;
+  const portfolioInvested = portfolioPositions.reduce((sum, item) => {
+    return sum + (item.quantity ?? 0) * (item.average_price ?? 0);
+  }, 0);
   const recentNotifications =
     (notificationsResult.data ?? []) as NotificationRecord[];
   const watchedSymbolSet = new Set(watchlistSymbols);
@@ -545,7 +561,7 @@ export default async function DashboardPage() {
         <div className="mb-6 rounded-2xl border border-sky-400/20 bg-sky-400/[0.06] p-4 shadow-2xl shadow-black/20">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <p className="text-sm leading-6 text-sky-100/85">
-              Desbloquea mas activos y filtros avanzados con Pro.
+              Desbloquea más activos y filtros avanzados con Pro.
             </p>
             <Link
               href="/pricing"
@@ -556,6 +572,49 @@ export default async function DashboardPage() {
           </div>
         </div>
       ) : null}
+
+      <div className="mb-6 rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.06] p-5 shadow-2xl shadow-black/20">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-300">
+              Portafolio manual
+            </p>
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-white">
+              Controla tus posiciones registradas
+            </h2>
+          </div>
+          <Link
+            href="/portfolio"
+            className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-semibold text-zinc-200 transition hover:border-emerald-400/40 hover:text-emerald-200"
+          >
+            Ver portafolio
+          </Link>
+        </div>
+
+        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="rounded-3xl bg-black/40 p-4">
+            <p className="text-xs uppercase tracking-[0.16em] text-zinc-400">Posiciones</p>
+            <p className="mt-2 text-3xl font-semibold text-white">{portfolioCount}</p>
+          </div>
+          <div className="rounded-3xl bg-black/40 p-4">
+            <p className="text-xs uppercase tracking-[0.16em] text-zinc-400">Invertido total</p>
+            <p className="mt-2 text-3xl font-semibold text-white">
+              {portfolioInvested > 0
+                ? new Intl.NumberFormat("es-ES", {
+                    style: "currency",
+                    currency: "USD",
+                  }).format(portfolioInvested)
+                : "-"}
+            </p>
+          </div>
+          <div className="rounded-3xl bg-black/40 p-4">
+            <p className="text-xs uppercase tracking-[0.16em] text-zinc-400">Actual</p>
+            <p className="mt-2 text-sm text-zinc-300">
+              Sigue tus inversiones manuales desde la nueva sección de portafolio.
+            </p>
+          </div>
+        </div>
+      </div>
 
       <PageHelp
         title="Tu resumen personal"

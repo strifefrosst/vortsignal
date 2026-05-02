@@ -14,6 +14,7 @@ const publicNavigation = [
 
 const privateNavigation = [
   { href: "/dashboard", label: "Panel" },
+  { href: "/portfolio", label: "Portafolio" },
   { href: "/signals", label: "Señales" },
   { href: "/watchlist", label: "Mi lista" },
   { href: "/alerts", label: "Alertas" },
