@@ -90,19 +90,25 @@ export default function PortfolioPositionForm({}: PortfolioPositionFormProps) {
 
   return (
     <form
+      id="portfolio-form"
       onSubmit={handleSubmit}
-      className="rounded-3xl border border-white/10 bg-zinc-950/80 p-6 shadow-2xl shadow-black/30"
+      className="rounded-3xl border border-white/10 bg-gradient-to-br from-zinc-950/90 via-zinc-950/80 to-zinc-950/90 p-6 shadow-2xl shadow-black/30"
     >
-      <div className="mb-6 flex items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-300">
-            Añadir posición
-          </p>
-          <h2 className="mt-2 text-2xl font-bold text-white">Registrar nueva posición</h2>
+      <div className="mb-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-300">
+              Añadir posición
+            </p>
+            <h2 className="mt-2 text-3xl font-semibold text-white">Añadir nueva posición</h2>
+          </div>
+          <span className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.16em] text-zinc-300">
+            Manual
+          </span>
         </div>
-        <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.16em] text-zinc-300">
-          Manual
-        </span>
+        <p className="mt-3 text-sm leading-6 text-zinc-400">
+          Puedes registrar activos aunque todavía no tengan precio conectado.
+        </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -112,8 +118,8 @@ export default function PortfolioPositionForm({}: PortfolioPositionFormProps) {
             value={symbol}
             onChange={(event) => setSymbol(event.target.value)}
             required
-            className="h-12 rounded-xl border border-white/10 bg-black px-4 text-sm text-white outline-none ring-emerald-400/20 transition focus:border-emerald-400/50 focus:ring-4"
-            placeholder="BTCUSDT"
+            className="h-14 rounded-2xl border border-white/10 bg-black/80 px-4 text-sm text-white outline-none ring-emerald-400/20 transition focus:border-emerald-400/50 focus:ring-4"
+            placeholder="BTCUSDC, AAPL, VWCE..."
           />
         </label>
 
@@ -122,8 +128,8 @@ export default function PortfolioPositionForm({}: PortfolioPositionFormProps) {
           <input
             value={assetName}
             onChange={(event) => setAssetName(event.target.value)}
-            className="h-12 rounded-xl border border-white/10 bg-black px-4 text-sm text-white outline-none ring-emerald-400/20 transition focus:border-emerald-400/50 focus:ring-4"
-            placeholder="Bitcoin"
+            className="h-14 rounded-2xl border border-white/10 bg-black/80 px-4 text-sm text-white outline-none ring-emerald-400/20 transition focus:border-emerald-400/50 focus:ring-4"
+            placeholder="Bitcoin, Apple, Vanguard FTSE..."
           />
         </label>
 
@@ -132,7 +138,7 @@ export default function PortfolioPositionForm({}: PortfolioPositionFormProps) {
           <select
             value={assetType}
             onChange={(event) => setAssetType(event.target.value as AssetType)}
-            className="h-12 rounded-xl border border-white/10 bg-black px-4 text-sm text-white outline-none ring-emerald-400/20 transition focus:border-emerald-400/50 focus:ring-4"
+            className="h-14 rounded-2xl border border-white/10 bg-black/80 px-4 text-sm text-white outline-none ring-emerald-400/20 transition focus:border-emerald-400/50 focus:ring-4"
           >
             {assetTypes.map((type) => (
               <option key={type} value={type}>
@@ -150,7 +156,7 @@ export default function PortfolioPositionForm({}: PortfolioPositionFormProps) {
             type="number"
             min="0"
             step="any"
-            className="h-12 rounded-xl border border-white/10 bg-black px-4 text-sm text-white outline-none ring-emerald-400/20 transition focus:border-emerald-400/50 focus:ring-4"
+            className="h-14 rounded-2xl border border-white/10 bg-black/80 px-4 text-sm text-white outline-none ring-emerald-400/20 transition focus:border-emerald-400/50 focus:ring-4"
           />
         </label>
 
@@ -162,7 +168,7 @@ export default function PortfolioPositionForm({}: PortfolioPositionFormProps) {
             type="number"
             min="0"
             step="any"
-            className="h-12 rounded-xl border border-white/10 bg-black px-4 text-sm text-white outline-none ring-emerald-400/20 transition focus:border-emerald-400/50 focus:ring-4"
+            className="h-14 rounded-2xl border border-white/10 bg-black/80 px-4 text-sm text-white outline-none ring-emerald-400/20 transition focus:border-emerald-400/50 focus:ring-4"
           />
         </label>
 
@@ -171,7 +177,7 @@ export default function PortfolioPositionForm({}: PortfolioPositionFormProps) {
           <input
             value={currency}
             onChange={(event) => setCurrency(event.target.value)}
-            className="h-12 rounded-xl border border-white/10 bg-black px-4 text-sm text-white outline-none ring-emerald-400/20 transition focus:border-emerald-400/50 focus:ring-4"
+            className="h-14 rounded-2xl border border-white/10 bg-black/80 px-4 text-sm text-white outline-none ring-emerald-400/20 transition focus:border-emerald-400/50 focus:ring-4"
             placeholder="USD"
           />
         </label>
@@ -181,8 +187,8 @@ export default function PortfolioPositionForm({}: PortfolioPositionFormProps) {
           <input
             value={platform}
             onChange={(event) => setPlatform(event.target.value)}
-            className="h-12 rounded-xl border border-white/10 bg-black px-4 text-sm text-white outline-none ring-emerald-400/20 transition focus:border-emerald-400/50 focus:ring-4"
-            placeholder="Binance, Revolut, Trade Republic"
+            className="h-14 rounded-2xl border border-white/10 bg-black/80 px-4 text-sm text-white outline-none ring-emerald-400/20 transition focus:border-emerald-400/50 focus:ring-4"
+            placeholder="Trade Republic, Revolut, Binance..."
           />
         </label>
       </div>
@@ -193,7 +199,7 @@ export default function PortfolioPositionForm({}: PortfolioPositionFormProps) {
           value={notes}
           onChange={(event) => setNotes(event.target.value)}
           rows={4}
-          className="rounded-2xl border border-white/10 bg-black px-4 py-3 text-sm text-white outline-none ring-emerald-400/20 transition focus:border-emerald-400/50 focus:ring-4"
+          className="rounded-3xl border border-white/10 bg-black/80 px-4 py-3 text-sm text-white outline-none ring-emerald-400/20 transition focus:border-emerald-400/50 focus:ring-4"
           placeholder="Observaciones sobre esta posición"
         />
       </label>
@@ -202,9 +208,9 @@ export default function PortfolioPositionForm({}: PortfolioPositionFormProps) {
         <button
           type="submit"
           disabled={status === "loading"}
-          className="inline-flex items-center justify-center rounded-xl bg-emerald-400 px-5 py-3 text-sm font-bold text-black transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex w-full items-center justify-center rounded-2xl bg-emerald-400 px-5 py-4 text-sm font-semibold text-black transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
         >
-          {status === "loading" ? "Guardando..." : "Guardar posición"}
+          {status === "loading" ? "Guardando..." : "Añadir posición"}
         </button>
         {message ? (
           <p className={`text-sm ${status === "error" ? "text-red-300" : "text-emerald-200"}`}>

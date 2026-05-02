@@ -76,54 +76,72 @@ export default async function PortfolioPage() {
   return (
     <AppShell
       eyebrow="PORTAFOLIO"
-      title="Controla tus inversiones manuales."
-      description="Registra posiciones fuera de la plataforma, monitorea totales invertidos y sigue el valor actual cuando hay precios disponibles."
+      title="Controla tus inversiones manuales"
+      description="Registra posiciones externas, estima exposición y prepara el análisis inteligente de cartera."
     >
       <div className="space-y-10">
-        <div className="grid gap-6 xl:grid-cols-[1.4fr_0.8fr]">
-          <div className="space-y-6 rounded-3xl border border-white/10 bg-zinc-950/80 p-8 shadow-2xl shadow-black/20">
-            <div className="space-y-3">
-              <p className="text-sm uppercase tracking-[0.24em] text-sky-300">Cartera manual</p>
-              <h2 className="text-3xl font-semibold text-white">Resumen de tu portafolio</h2>
-              <p className="max-w-2xl text-base text-zinc-400">
-                Visión general de tus posiciones registradas y métricas de inversión.
+        <section className="rounded-3xl border border-white/10 bg-zinc-950/80 p-8 shadow-2xl shadow-black/20">
+          <div className="flex flex-col gap-8 xl:flex-row xl:items-start xl:justify-between">
+            <div className="max-w-3xl space-y-4">
+              <span className="inline-flex rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-300">
+                Cartera manual
+              </span>
+              <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+                Controla tus inversiones manuales
+              </h1>
+              <p className="max-w-2xl text-lg leading-8 text-zinc-400">
+                Registra posiciones externas, estima exposición y prepara el análisis inteligente de cartera.
+              </p>
+              <p className="text-sm text-zinc-500">
+                Información educativa. No constituye asesoramiento financiero personalizado.
               </p>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="rounded-3xl bg-white/5 p-5">
-                <p className="text-sm uppercase tracking-[0.24em] text-zinc-400">Posiciones</p>
-                <p className="mt-3 text-3xl font-semibold text-white">{totals.count}</p>
-              </div>
-              <div className="rounded-3xl bg-white/5 p-5">
-                <p className="text-sm uppercase tracking-[0.24em] text-zinc-400">Invertido total</p>
-                <p className="mt-3 text-3xl font-semibold text-white">{formatCurrency(totals.invested)}</p>
-              </div>
-              <div className="rounded-3xl bg-white/5 p-5">
-                <p className="text-sm uppercase tracking-[0.24em] text-zinc-400">Plataformas</p>
-                <p className="mt-3 text-3xl font-semibold text-white">{platformList.length}</p>
-              </div>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              <span className="rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-zinc-200">
+                Importación CSV próximamente
+              </span>
+              <span className="rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-zinc-200">
+                Capturas de portfolio próximamente
+              </span>
+              <span className="rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-zinc-200">
+                Conexiones API futuras
+              </span>
             </div>
+          </div>
+        </section>
 
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              <div className="rounded-3xl bg-zinc-950/80 p-5 text-sm text-zinc-300">
-                <p className="uppercase tracking-[0.24em] text-zinc-500">Tipos de activos</p>
-                <p className="mt-3 font-medium text-white">{investmentByType.join(" · ") || "Ninguno"}</p>
-              </div>
-              <div className="rounded-3xl bg-zinc-950/80 p-5 text-sm text-zinc-300">
-                <p className="uppercase tracking-[0.24em] text-zinc-500">Moneda base</p>
-                <p className="mt-3 font-medium text-white">USD</p>
-              </div>
-              <div className="rounded-3xl bg-zinc-950/80 p-5 text-sm text-zinc-300">
-                <p className="uppercase tracking-[0.24em] text-zinc-500">Precios en tiempo real</p>
-                <p className="mt-3 font-medium text-white">
-                  {Object.keys(priceMap).length > 0 ? "Disponible" : "No disponible"}
-                </p>
-              </div>
+        <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="rounded-3xl border border-emerald-400/10 bg-emerald-400/10 p-6 shadow-xl shadow-black/20">
+              <p className="text-sm uppercase tracking-[0.18em] text-emerald-200">Posiciones</p>
+              <p className="mt-3 text-3xl font-semibold text-white">{totals.count}</p>
+            </div>
+            <div className="rounded-3xl border border-sky-400/10 bg-sky-400/10 p-6 shadow-xl shadow-black/20">
+              <p className="text-sm uppercase tracking-[0.18em] text-sky-200">Invertido total</p>
+              <p className="mt-3 text-3xl font-semibold text-white">{formatCurrency(totals.invested)}</p>
+            </div>
+            <div className="rounded-3xl border border-violet-400/10 bg-violet-400/10 p-6 shadow-xl shadow-black/20">
+              <p className="text-sm uppercase tracking-[0.18em] text-violet-200">Plataformas</p>
+              <p className="mt-3 text-3xl font-semibold text-white">{platformList.length}</p>
+            </div>
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl shadow-black/20">
+              <p className="text-sm uppercase tracking-[0.18em] text-zinc-400">Tipos de activos</p>
+              <p className="mt-3 text-2xl font-semibold text-white">{investmentByType.join(" · ") || "Ninguno"}</p>
+            </div>
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl shadow-black/20">
+              <p className="text-sm uppercase tracking-[0.18em] text-zinc-400">Moneda base</p>
+              <p className="mt-3 text-2xl font-semibold text-white">USD</p>
+            </div>
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl shadow-black/20">
+              <p className="text-sm uppercase tracking-[0.18em] text-zinc-400">Precios en tiempo real</p>
+              <p className="mt-3 text-2xl font-semibold text-white">
+                {Object.keys(priceMap).length > 0 ? "Disponible" : "No disponible"}
+              </p>
             </div>
           </div>
 
-          <aside className="space-y-6 rounded-3xl border border-white/10 bg-zinc-950/80 p-8 shadow-2xl shadow-black/20">
+          <div className="rounded-3xl border border-white/10 bg-zinc-950/80 p-6 shadow-xl shadow-black/20 xl:p-8">
             <PageHelp
               title="Guía de cartera"
               description="Usa esta sección para controlar tu portafolio manual y comparar tu inversión con precios actuales cuando estén disponibles."
@@ -142,17 +160,17 @@ export default async function PortfolioPage() {
                 },
               ]}
             />
-          </aside>
-        </div>
+          </div>
+        </section>
 
-        <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+        <section className="grid gap-6 xl:grid-cols-[1.2fr_0.85fr]">
           <div className="space-y-6">
             <div className="rounded-3xl border border-white/10 bg-zinc-950/80 p-8 shadow-2xl shadow-black/20">
-              <div className="flex flex-col gap-2">
-                <p className="text-sm uppercase tracking-[0.24em] text-sky-300">Gestión de posiciones</p>
-                <h2 className="text-3xl font-semibold text-white">Tu portafolio</h2>
-                <p className="max-w-2xl text-sm text-zinc-400">
-                  Administra tus posiciones y mantiene un historial de tus inversiones manuales.
+              <div className="flex flex-col gap-3">
+                <p className="text-sm uppercase tracking-[0.24em] text-sky-300">Tu portafolio</p>
+                <h2 className="text-3xl font-semibold text-white">Posiciones y rendimiento</h2>
+                <p className="max-w-2xl text-sm leading-6 text-zinc-400">
+                  Revisa tus posiciones registradas y observa cómo se comportan con los precios disponibles.
                 </p>
               </div>
             </div>
@@ -164,16 +182,16 @@ export default async function PortfolioPage() {
 
           <div className="space-y-6">
             <PortfolioPositionForm />
-            <div className="rounded-3xl border border-white/10 bg-zinc-950/80 p-6 text-sm text-zinc-300">
-              <p className="font-semibold text-white">Notas rápidas</p>
-              <ul className="mt-4 space-y-3 list-disc pl-5">
-                <li>Guarda operaciones para rastrear tu inversión fuera de señales automáticas.</li>
-                <li>Los precios de cripto se muestran solo si están disponibles desde el snapshot de mercado.</li>
-                <li>Esta cartera es manual y no afecta tus señales ni alertas.</li>
+            <div className="rounded-3xl border border-white/10 bg-zinc-950/80 p-6 shadow-xl shadow-black/20">
+              <p className="text-sm uppercase tracking-[0.24em] text-zinc-500">Consejos rápidos</p>
+              <ul className="mt-4 space-y-3 text-sm text-zinc-300">
+                <li>Registra activos aunque todavía no tengan precio conectado.</li>
+                <li>Mantén tu lista actualizada para ver un mejor panorama de exposición.</li>
+                <li>Las posiciones manuales son independientes de señales y alertas.</li>
               </ul>
             </div>
           </div>
-        </div>
+        </section>
       </div>
     </AppShell>
   );

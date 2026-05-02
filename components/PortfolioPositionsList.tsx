@@ -61,6 +61,11 @@ export default function PortfolioPositionsList({
     }
   }
 
+  function scrollToForm() {
+    const target = document.getElementById("portfolio-form");
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   return (
     <div className="space-y-4">
       {error ? (
@@ -70,8 +75,21 @@ export default function PortfolioPositionsList({
       ) : null}
 
       {positions.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-white/10 bg-zinc-950/80 p-8 text-center text-sm text-zinc-300">
-          No hay posiciones registradas todavía. Añade tu primera posición desde el formulario.
+        <div className="rounded-3xl border border-dashed border-white/10 bg-zinc-950/80 p-10 text-center shadow-xl shadow-black/20">
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-300">
+            Aún no hay posiciones
+          </p>
+          <h2 className="mt-4 text-3xl font-semibold text-white">Añade tu primera posición</h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-zinc-400">
+            Añade tu primera posición para empezar a calcular exposición y seguimiento.
+          </p>
+          <button
+            type="button"
+            onClick={scrollToForm}
+            className="mt-8 inline-flex items-center justify-center rounded-2xl border border-emerald-400/20 bg-emerald-400/10 px-5 py-3 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-400/15"
+          >
+            Ir al formulario
+          </button>
         </div>
       ) : (
         <div className="grid gap-4">
@@ -90,16 +108,16 @@ export default function PortfolioPositionsList({
                 : undefined;
 
             return (
-              <div key={position.id} className="rounded-3xl border border-white/10 bg-zinc-950/80 p-5 shadow-xl shadow-black/20">
+              <div key={position.id} className="rounded-3xl border border-white/10 bg-zinc-950/80 p-6 shadow-xl shadow-black/20">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
-                      {position.asset_type}
-                    </p>
-                    <div className="mt-3 flex flex-wrap items-center gap-3">
-                      <p className="text-xl font-semibold text-white">{position.symbol}</p>
-                      <p className="text-sm text-zinc-400">{position.asset_name ?? "Activo manual"}</p>
+                  <div className="space-y-4">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="rounded-2xl bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-sky-200">
+                        {position.asset_type}
+                      </span>
+                      <h3 className="text-2xl font-semibold text-white">{position.symbol}</h3>
                     </div>
+                    <p className="text-sm text-zinc-400">{position.asset_name ?? "Activo manual"}</p>
                   </div>
 
                   <button
@@ -113,9 +131,9 @@ export default function PortfolioPositionsList({
                 </div>
 
                 <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-3xl bg-white/5 p-4">
+                  <div className="rounded-3xl bg-white/5 p-5">
                     <p className="text-xs uppercase tracking-[0.24em] text-zinc-400">Invertido</p>
-                    <p className="mt-2 text-lg font-semibold text-white">
+                    <p className="mt-3 text-2xl font-semibold text-white">
                       {new Intl.NumberFormat("es-ES", {
                         style: "currency",
                         currency: position.currency || "USD",
@@ -124,9 +142,9 @@ export default function PortfolioPositionsList({
                     <p className="mt-2 text-sm text-zinc-500">{position.quantity} × {position.average_price}</p>
                   </div>
 
-                  <div className="rounded-3xl bg-white/5 p-4">
+                  <div className="rounded-3xl bg-white/5 p-5">
                     <p className="text-xs uppercase tracking-[0.24em] text-zinc-400">Valor actual</p>
-                    <p className="mt-2 text-lg font-semibold text-white">
+                    <p className="mt-3 text-2xl font-semibold text-white">
                       {estimatedCurrentValue != null
                         ? new Intl.NumberFormat("es-ES", {
                             style: "currency",
