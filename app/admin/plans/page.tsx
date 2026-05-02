@@ -106,6 +106,15 @@ export default async function AdminPlansPage({
       title="Cambio manual de planes."
       description="Herramienta temporal para pruebas antes de integrar Stripe."
     >
+      <div className="mb-4">
+        <a
+          href="/admin"
+          className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-emerald-300 transition"
+        >
+          <span>←</span> Volver al panel admin
+        </a>
+      </div>
+
       <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-white/10 bg-zinc-950/80 p-4 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-300">

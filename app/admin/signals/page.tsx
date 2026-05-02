@@ -86,6 +86,26 @@ export default async function AdminSignalsPage() {
               El secreto de generación no viaja al navegador.
             </div>
           </div>
+
+          <div className="mt-8 border-t border-white/10 pt-6">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500 mb-3">
+              Otras herramientas
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <a
+                href="/admin/status"
+                className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-zinc-300 hover:border-emerald-400/40 hover:text-emerald-200 transition"
+              >
+                Estado del sistema
+              </a>
+              <a
+                href="/admin/plans"
+                className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-zinc-300 hover:border-emerald-400/40 hover:text-emerald-200 transition"
+              >
+                Gestionar planes
+              </a>
+            </div>
+          </div>
         </aside>
       </div>
     </AppShell>
