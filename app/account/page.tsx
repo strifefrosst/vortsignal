@@ -1,6 +1,7 @@
 import AppShell from "@/components/AppShell";
 import BillingPortalButton from "@/components/BillingPortalButton";
 import LogoutButton from "@/components/LogoutButton";
+import PageHelp from "@/components/PageHelp";
 import { formatWatchlistLimit } from "@/lib/plans/config";
 import { getUserPlan } from "@/lib/plans/server";
 import { createClient } from "@/lib/supabase/server";
@@ -59,6 +60,20 @@ export default async function AccountPage({
       title="Tu plan y limites actuales."
       description="Revisa el acceso disponible para tu cuenta antes de que activemos pagos."
     >
+      <PageHelp
+        title="Tu plan y acceso"
+        description="Estos son los límites y funcionalidades de tu plan actual. Mejora a Pro o Elite para más acceso."
+        items={[
+          { label: "Plan", description: "FREE, PRO o ELITE" },
+          { label: "Watchlist", description: "Activos que puedes vigilar" },
+          { label: "Alertas", description: "Disponibles en Pro y Elite" },
+          { label: "Filtros", description: "Filtros avanzados en Pro y Elite" },
+          { label: "Stripe", description: "Tu suscripción se gestiona aquí" },
+          { label: "Renovación", description: "Fecha de próximo ciclo de facturación" },
+        ]}
+        variant="compact"
+      />
+
       <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
         <section className="rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.06] p-6 shadow-2xl shadow-black/30">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">

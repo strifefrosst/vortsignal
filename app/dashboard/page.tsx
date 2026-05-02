@@ -5,6 +5,7 @@ import RiskBadge from "@/components/RiskBadge";
 import ScoreBadge from "@/components/ScoreBadge";
 import SignalBadge from "@/components/SignalBadge";
 import TrendBadge from "@/components/TrendBadge";
+import PageHelp from "@/components/PageHelp";
 import { isAdminEmail } from "@/lib/auth/admin";
 import { getUserPlan } from "@/lib/plans/server";
 import { createClient } from "@/lib/supabase/server";
@@ -555,6 +556,20 @@ export default async function DashboardPage() {
           </div>
         </div>
       ) : null}
+
+      <PageHelp
+        title="Tu resumen personal"
+        description="Estos indicadores te muestran el estado de señales activas en tu contexto (watchlist o mercado completo)."
+        items={[
+          { label: "Señal destacada", description: "La más reciente con mayor score" },
+          { label: "Score medio", description: "Promedio de todas las activas" },
+          { label: "Distribución", description: "Cuenta de LONG, SHORT, WAIT" },
+          { label: "Riesgo", description: "Distribución por LOW, MEDIUM, HIGH" },
+          { label: "Watchlist", description: "Tus activos vigilados" },
+          { label: "Alertas", description: "Notificaciones según configuración" },
+        ]}
+        variant="compact"
+      />
 
       <div className="mb-6 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-xs text-amber-200/80">
         Las señales son lecturas técnicas informativas, no recomendaciones personalizadas.

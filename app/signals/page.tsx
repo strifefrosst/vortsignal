@@ -4,6 +4,7 @@ import SignalsFilterBar, {
   type SignalsFilters,
 } from "@/components/SignalsFilterBar";
 import SignalsGuide from "@/components/SignalsGuide";
+import PageHelp from "@/components/PageHelp";
 import { getEnabledAssets } from "@/lib/config/assets";
 import { getDefaultPlanConfig } from "@/lib/plans/config";
 import { getUserPlan } from "@/lib/plans/server";
@@ -394,6 +395,22 @@ export default async function SignalsPage({ searchParams }: SignalsPageProps) {
       description="Consulta tus señales más recientes, priorizadas por vigencia, score y contexto operativo."
     >
       <SignalsGuide />
+
+      <PageHelp
+        title="Entiende las señales"
+        description="Cada señal tiene indicadores técnicos que convergen. Usa estos campos para interpretar qué significa cada lectura."
+        items={[
+          { label: "LONG", description: "El precio probablemente suba" },
+          { label: "SHORT", description: "El precio probablemente baje" },
+          { label: "WAIT", description: "Todavía no hay confluencia clara" },
+          { label: "Score", description: "Fuerza de la lectura (0-100), no probabilidad" },
+          { label: "Riesgo", description: "LOW/MEDIUM/HIGH según distancia a stop loss" },
+          { label: "RSI", description: "Momentum (0-100). >70 sobrecompra, <30 sobreventa" },
+          { label: "Volumen", description: "Relativo a media. >1.0 confirma movimientos" },
+          { label: "Tendencia", description: "Dirección general (alcista/bajista/lateral)" },
+        ]}
+        variant="default"
+      />
 
       <SignalsFilterBar
         assets={assets}

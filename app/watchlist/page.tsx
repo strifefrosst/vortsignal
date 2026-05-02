@@ -1,4 +1,5 @@
 import AppShell from "@/components/AppShell";
+import PageHelp from "@/components/PageHelp";
 import { getEnabledAssets } from "@/lib/config/assets";
 import { formatWatchlistLimit } from "@/lib/plans/config";
 import { getUserPlan } from "@/lib/plans/server";
@@ -69,6 +70,18 @@ export default async function WatchlistPage() {
           </p>
         ) : null}
       </div>
+
+      <PageHelp
+        title="¿Por qué vigilar activos?"
+        description="Tu watchlist afecta al dashboard, a las alertas y a los filtros de señales. Usa esto para enfocarte en los mercados que realmente te interesan."
+        items={[
+          { label: "Dashboard", description: "Prioriza señales de tu lista" },
+          { label: "Alertas", description: "Solo notifica si están en watchlist" },
+          { label: "Señales", description: "Puedes filtrar por watchlist=true" },
+          { label: "Límites por plan", description: "Free=3, Pro=10, Elite=25" },
+        ]}
+        variant="compact"
+      />
 
       {error ? (
         <div className="rounded-2xl border border-red-400/20 bg-red-400/10 p-6 text-red-100 shadow-2xl shadow-black/30">

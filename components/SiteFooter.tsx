@@ -21,6 +21,18 @@ export default function SiteFooter() {
 
           <nav className="flex flex-wrap items-center justify-center gap-6 text-sm">
             <Link 
+              href="/learn" 
+              className="text-zinc-400 hover:text-emerald-400 transition-colors"
+            >
+              Guía
+            </Link>
+            <Link 
+              href="/roadmap" 
+              className="text-zinc-400 hover:text-emerald-400 transition-colors"
+            >
+              Roadmap
+            </Link>
+            <Link 
               href="/disclaimer" 
               className="text-zinc-400 hover:text-emerald-400 transition-colors"
             >

@@ -8,6 +8,7 @@ import UserStatusBadge from "@/components/UserStatusBadge";
 const publicNavigation = [
   { href: "/market", label: "Mercado" },
   { href: "/signals", label: "Señales" },
+  { href: "/learn", label: "Guía" },
   { href: "/pricing", label: "Planes" },
 ];
 
@@ -17,6 +18,7 @@ const privateNavigation = [
   { href: "/watchlist", label: "Mi lista" },
   { href: "/alerts", label: "Alertas" },
   { href: "/market", label: "Mercado" },
+  { href: "/learn", label: "Guía" },
   { href: "/pricing", label: "Planes" },
   { href: "/account", label: "Cuenta" },
 ];

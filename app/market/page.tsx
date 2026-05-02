@@ -1,4 +1,5 @@
 import AppShell from "@/components/AppShell";
+import PageHelp from "@/components/PageHelp";
 import { getMarketSnapshots, type MarketSnapshot } from "@/lib/market/binance";
 
 function formatPrice(value: number) {
@@ -118,6 +119,20 @@ export default async function MarketPage() {
       title="Pulso público de mercado, sin claves y sin operativa."
       description="Lectura de velas 1h para los activos habilitados, ordenados por prioridad."
     >
+      <PageHelp
+        title="Entiende el snapshot de mercado"
+        description="Datos públicos de Binance sin claves de trading. Úsalos como contexto para las señales técnicas."
+        items={[
+          { label: "Precio actual", description: "Cierre de la vela 1h más reciente" },
+          { label: "RSI", description: "Momentum (0-100)" },
+          { label: "SMA20", description: "Media móvil de 20 velas 1h" },
+          { label: "Volumen", description: "Ratio relativo vs media histórica" },
+          { label: "Tendencia", description: "Dirección general (alcista/bajista/lateral)" },
+          { label: "Actualización", description: "Timestamp del último cierre de vela" },
+        ]}
+        variant="compact"
+      />
+
       {hasError ? (
         <div className="rounded-2xl border border-red-400/20 bg-red-400/10 p-8 shadow-2xl shadow-black/30">
           <p className="text-sm font-semibold uppercase tracking-[0.22em] text-red-300">

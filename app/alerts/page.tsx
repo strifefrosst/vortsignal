@@ -5,6 +5,7 @@ import AppShell from "@/components/AppShell";
 import NotificationsList, {
   type NotificationView,
 } from "@/components/NotificationsList";
+import PageHelp from "@/components/PageHelp";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -115,6 +116,19 @@ export default async function AlertsPage() {
           </p>
         </div>
       ) : null}
+
+      <PageHelp
+        title="Configura tus alertas"
+        description="Las alertas internas te notifican cuando hay nuevas señales que cumplen tus criterios. No automatizan operaciones, solo notifican."
+        items={[
+          { label: "Habilitadas", description: "Activa/desactiva todas las alertas" },
+          { label: "Score mínimo", description: "Solo notificar si score >= este valor" },
+          { label: "Tipos de señal", description: "Cuáles quieres: LONG, SHORT, WAIT" },
+          { label: "Riesgo permitido", description: "LOW, MEDIUM, HIGH" },
+          { label: "Solo watchlist", description: "Notificaciones solo de tus activos vigilados" },
+        ]}
+        variant="compact"
+      />
 
       <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
         <AlertSettingsForm settings={settings} />
